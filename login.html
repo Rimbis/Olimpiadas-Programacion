@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login web</title>
+    <link rel="stylesheet" href="login.css">
+    <link rel="stylesheet" href="cl-icon/css/all.min.css">
+</head>
+<body>
+    <div class="contenedor">
+        <!-- Formulario de Inicio de Sesión -->
+        <form class="formulario" id="formularioInicioSesion">
+            <h1 class="tituloI">Inicio</h1>
+            <div class="campo">
+                <input type="text" name="nombreUsuario" class="entrada" placeholder="usuario" required>
+            </div>
+            <div class="campo">
+                <input type="password" name="contra" class="entrada" placeholder="contraseña" required>
+            </div>
+            <button type="submit" class="boton">Iniciar sesión</button>
+            <div class="pie">
+                ¿No tienes cuenta? <span class="enlace" onclick="mostrarRegistro()">Regístrate</span>
+            </div>
+        </form>
+
+        <!-- Formulario de Registro -->
+        <form class="formulario oculto" id="formularioRegistro">
+            <h1 class="tituloR">Registro</h1>
+            <div class="campo">
+                <input type="text" name="nombreCompleto" class="entrada" placeholder="nombre completo" required>
+            </div>
+            <div class="campo">
+                <input type="email" name="correoElectronico" class="entrada" placeholder="email" required>
+            </div>
+            <div class="campo">
+                <input type="text" name="nombreUsuario" class="entrada" placeholder="usuario" required>
+            </div>
+            <div class="campo">
+                <input type="password" name="contra" class="entrada" placeholder="contraseña" required>
+            </div>
+            <button type="submit" class="boton">Registrarse</button>
+            <div class="pie">
+                ¿Ya tienes cuenta? <span class="enlace" onclick="mostrarInicioSesion()">Inicia sesión</span>
+            </div>
+        </form>
+
+    </div>
+
+    <script>
+        function mostrarRegistro() {
+            document.getElementById('formularioInicioSesion').classList.add('oculto');
+            document.getElementById('formularioRegistro').classList.remove('oculto');
+        }
+        
+        function mostrarInicioSesion() {
+            document.getElementById('formularioRegistro').classList.add('oculto');
+            document.getElementById('formularioInicioSesion').classList.remove('oculto');
+        }
+        
+        // Manejar envío de formularios
+        document.getElementById('formularioInicioSesion').addEventListener('submit', function(evento) {
+            evento.preventDefault();
+            const nombreUsuario = this.nombreUsuario.value;
+            const contra = this.contra.value;
+           
+            console.log('Inicio de sesión:', { nombreUsuario, contra });
+            alert('Inicio de sesión exitoso');
+        });
+        
+        document.getElementById('formularioRegistro').addEventListener('submit', function(evento) {
+            evento.preventDefault();
+            const datosFormulario = {
+                nombreCompleto: this.nombreCompleto.value,
+                correoElectronico: this.correoElectronico.value,
+                nombreUsuario: this.nombreUsuario.value,
+                contra: this.contra.value
+            };
+           
+            console.log('Registro:', datosFormulario);
+            alert('Registro exitoso');
+        });
+    </script>
+</body>
+</html>
