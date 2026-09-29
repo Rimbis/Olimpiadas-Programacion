@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <title>AeroPlate</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="index.css" />
+</head>
+
+<body>
+    <header class="encabezado">
+        <h1>AeroPlate</h1>
+
+        <div class="opciones">
+            <label class="selector">
+                <span class="sr" data-texto="ubicacion">Ubicación</span>
+                <select id="selUbicacion">
+                    <option value="AR" data-texto="p_AR">Argentina</option>
+                    <option value="CL" data-texto="p_CL">Chile</option>
+                    <option value="UY" data-texto="p_UY">Uruguay</option>
+                    <option value="MX" data-texto="p_MX">México</option>
+                    <option value="ES" data-texto="p_ES">España</option>
+                    <option value="US" data-texto="p_US">Estados Unidos</option>
+                </select>
+            </label>
+
+            <label class="selector">
+                <span class="sr" data-texto="idioma">Idioma</span>
+                <select id="selIdioma">
+                    <option value="es">Español</option>
+                    <option value="en">English</option>
+                </select>
+            </label>
+
+            <!-- Cuando el backend devuelva la sesión, este bloque se reemplaza por "Hola, nombre / Salir" -->
+            <div class="usuario" id="usuario">
+                <a href="login.html" class="btnLink destacado" data-texto="login">Iniciar sesión</a>
+            </div>
+            <a href="carrito.html" class="btnLink">
+                <span data-texto="carrito">Carrito</span>
+                <span class="contador" id="cantCarrito">0</span>
+            </a>
+        </div>
+    </header>
+
+    <div class="contenedor">
+        <aside class="lateral" aria-label="Secciones">
+            <nav>
+                <button class="navBtn activo" data-seccion="explorar" data-texto="navExplorar">Explorar</button>
+                <button class="navBtn" data-seccion="vuelos" data-texto="navVuelos">Vuelos</button>
+                <button class="navBtn" data-seccion="hoteles" data-texto="navHoteles">Hoteles</button>
+                <button class="navBtn" data-seccion="paquetes" data-texto="navPaquetes">Paquetes turísticos</button>
+            </nav>
+        </aside>
+
+        <main>
+            <div class="panel" id="explorar">
+                <!-- CARRUSEL -->
+                <section class="carrusel" aria-label="Destinos destacados">
+                    <div class="cuerpoCarrusel">
+                        <img class="slide" src="img/foto1.jpg" alt="Destino 1" />
+                        <img class="slide" src="img/foto2.jpg" alt="Destino 2" />
+                        <img class="slide" src="img/foto3.jpg" alt="Destino 3" />
+                        <img class="slide" src="img/foto4.jpg" alt="Destino 4" />
+                    </div>
+                    <button class="flecha prev" aria-label="Anterior">&#10094;</button>
+                    <button class="flecha next" aria-label="Siguiente">&#10095;</button>
+                    <div class="puntos"></div>
+                </section>
+
+                <!-- BUSCADOR + MAPA -->
+                <section class="buscador">
+                    <h2 data-texto="planifica">Planifica tu ruta</h2>
+                    <div class="formulario">
+                        <input id="origen" data-placeholder="origenPH" placeholder="¿Desde dónde? Ej: Buenos Aires" />
+                        <input id="destino" data-placeholder="destinoPH" placeholder="¿Hasta dónde? Ej: Madrid" />
+                        <button id="btnBuscar" data-texto="buscar">Buscar</button>
+                    </div>
+                    <p id="mensaje" role="status"></p>
+                    <div id="map"></div>
+                </section>
+            </div>
+            <section class="panel" id="vuelos" hidden>
+                <h2 data-texto="navVuelos">Vuelos</h2>
+                <p class="aviso" data-texto="proximamente">Pronto verás aquí los productos disponibles.</p>
+                <ul class="listaProductos" id="lista-vuelos"></ul>
+            </section>
+
+            <!-- HOTELES -->
+            <section class="panel" id="hoteles" hidden>
+                <h2 data-texto="navHoteles">Hoteles</h2>
+                <p class="aviso" data-texto="proximamente">Pronto verás aquí los productos disponibles.</p>
+                <ul class="listaProductos" id="lista-hoteles"></ul>
+            </section>
+
+            <!-- PAQUETES TURÍSTICOS -->
+            <section class="panel" id="paquetes" hidden>
+                <h2 data-texto="navPaquetes">Paquetes turísticos</h2>
+                <p class="aviso" data-texto="proximamente">Pronto verás aquí los productos disponibles.</p>
+                <ul class="listaProductos" id="lista-paquetes"></ul>
+            </section>
+        </main>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        /* IDIOMA Y UBICACIÓN */
+        /*Idioma: Solo Ingles y Español*/
+        const textos = {
+            es: {
+                ubicacion: "Ubicación",
+                idioma: "Idioma",
+                login: "Iniciar sesión",
+                planifica: "Planifica tu ruta",
+                buscar: "Buscar",
+                origenPH: "¿Desde dónde? Ej: Buenos Aires",
+                destinoPH: "¿Hasta dónde? Ej: Madrid",
+                completa: "Completa origen y destino.",
+                buscando: "Buscando...",
+                noEncontre: "No encontré: ",
+                p_AR: "Argentina",
+                p_CL: "Chile",
+                p_UY: "Uruguay",
+                p_MX: "México",
+                p_ES: "España",
+                p_US: "Estados Unidos",
+                navExplorar: "Explorar",
+                navVuelos: "Vuelos",
+                navHoteles: "Hoteles",
+                navPaquetes: "Paquetes turísticos",
+                proximamente: "Pronto verás aquí los productos disponibles.",
+            },
+            en: {
+                ubicacion: "Location",
+                idioma: "Language",
+                login: "Log in",
+                planifica: "Plan your route",
+                buscar: "Search",
+                origenPH: "From where? E.g. Buenos Aires",
+                destinoPH: "To where? E.g. Madrid",
+                completa: "Fill in origin and destination.",
+                buscando: "Searching...",
+                noEncontre: "Not found: ",
+                p_AR: "Argentina",
+                p_CL: "Chile",
+                p_UY: "Uruguay",
+                p_MX: "Mexico",
+                p_ES: "Spain",
+                p_US: "United States",
+                navExplorar: "Explore",
+                navVuelos: "Flights",
+                navHoteles: "Hotels",
+                navPaquetes: "Tour packages",
+                proximamente: "Soon you'll see the available products here.",
+            },
+        };
+
+        // Preferencias del visitante (se recuerdan entre visitas)
+        const config = { idioma: "es", ubicacion: "AR" };
+        try {
+            Object.assign(config, JSON.parse(localStorage.getItem("aeroplate_config")) || {});
+        } catch (e) {
+            /* si no hay almacenamiento, se usan los valores por defecto */
+        }
+
+        const t = (clave) => textos[config.idioma][clave];
+
+        function aplicarIdioma() {
+            document.documentElement.lang = config.idioma;
+            document.querySelectorAll("[data-texto]").forEach((el) => {
+                el.textContent = t(el.dataset.texto);
+            });
+            document.querySelectorAll("[data-placeholder]").forEach((el) => {
+                el.placeholder = t(el.dataset.placeholder);
+            });
+        }
+
+        function guardarConfig() {
+            try {
+                localStorage.setItem("aeroplate_config", JSON.stringify(config));
+            } catch (e) { }
+        }
+
+        const selIdioma = document.getElementById("selIdioma");
+        const selUbicacion = document.getElementById("selUbicacion");
+        selIdioma.value = config.idioma;
+        selUbicacion.value = config.ubicacion;
+
+        selIdioma.addEventListener("change", () => {
+            config.idioma = selIdioma.value;
+            guardarConfig();
+            aplicarIdioma();
+        });
+        selUbicacion.addEventListener("change", () => {
+            config.ubicacion = selUbicacion.value;
+            guardarConfig();
+        });
+
+        aplicarIdioma();
+
+        /* CARRUSEL */
+        const carrusel = document.querySelector(".carrusel");
+        const cuerpoCarrusel = carrusel.querySelector(".cuerpoCarrusel");
+        const contPuntos = carrusel.querySelector(".puntos");
+        const total = cuerpoCarrusel.children.length;
+        let actual = 0;
+        let timer;
+
+        // Un punto por cada diapositiva
+        for (let i = 0; i < total; i++) {
+            const b = document.createElement("button");
+            b.className = "punto";
+            b.setAttribute("aria-label", "Ir a la imagen " + (i + 1));
+            b.addEventListener("click", () => {
+                ir(i);
+                reiniciar();
+            });
+            contPuntos.appendChild(b);
+        }
+
+        function ir(n) {
+            actual = (n + total) % total; // vuelve al inicio/final (bucle)
+            cuerpoCarrusel.style.transform = `translateX(-${actual * 100}%)`;
+            contPuntos.querySelectorAll(".punto").forEach((p, i) => p.classList.toggle("activo", i === actual));
+        }
+
+        function reiniciar() {
+            // autoplay cada 4 s
+            clearInterval(timer);
+            timer = setInterval(() => ir(actual + 1), 4000);
+        }
+
+        carrusel.querySelector(".prev").addEventListener("click", () => {
+            ir(actual - 1);
+            reiniciar();
+        });
+        carrusel.querySelector(".next").addEventListener("click", () => {
+            ir(actual + 1);
+            reiniciar();
+        });
+
+        document.addEventListener("keydown", (e) => {
+            if (e.target.tagName === "INPUT") return; // no interferir al escribir
+            if (e.key === "ArrowLeft") {
+                ir(actual - 1);
+                reiniciar();
+            }
+            if (e.key === "ArrowRight") {
+                ir(actual + 1);
+                reiniciar();
+            }
+        });
+
+        carrusel.addEventListener("mouseenter", () => clearInterval(timer));
+        carrusel.addEventListener("mouseleave", reiniciar);
+
+        ir(0);
+        reiniciar();
+
+        /* MAPA */
+        const map = L.map("map").setView([0, 0], 2);
+        L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+            maxZoom: 19,
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+        }).addTo(map);
+
+        let linea;
+        const mensaje = document.getElementById("mensaje");
+
+        async function buscarCiudad(nombre) {
+            const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(nombre)}`;
+            const res = await fetch(url);
+            const data = await res.json();
+            if (!data.length) throw new Error(t("noEncontre") + nombre);
+            return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
+        }
+
+        async function buscar() {
+            const origen = document.getElementById("origen").value.trim();
+            const destino = document.getElementById("destino").value.trim();
+            if (!origen || !destino) {
+                mensaje.textContent = t("completa");
+                return;
+            }
+            mensaje.textContent = t("buscando");
+            try {
+                const desde = await buscarCiudad(origen);
+                const hasta = await buscarCiudad(destino);
+                if (linea) map.removeLayer(linea);
+                linea = L.polyline([desde, hasta], { color: "#2b7a9b", weight: 3, dashArray: "10, 10" }).addTo(map);
+                map.fitBounds(linea.getBounds(), { padding: [30, 30] });
+                mensaje.textContent = "";
+            } catch (e) {
+                mensaje.textContent = e.message;
+            }
+        }
+
+        document.getElementById("btnBuscar").addEventListener("click", buscar);
+        document.querySelectorAll(".formulario input").forEach((inp) =>
+            inp.addEventListener("keydown", (e) => {
+                if (e.key === "Enter") buscar();
+            })
+        );
+
+
+
+        /* MENÚ LATERAL */
+        const botonesNav = document.querySelectorAll(".navBtn");
+        const paneles = document.querySelectorAll(".panel");
+
+        function mostrarSeccion(id) {
+            paneles.forEach(p => { p.hidden = p.id !== id; }); // solo una sección visible
+            botonesNav.forEach(b => b.classList.toggle("activo", b.dataset.seccion === id));
+            if (id === "explorar") map.invalidateSize(); // el mapa recalcula su tamaño al volver a mostrarse
+        }
+
+        botonesNav.forEach(b => b.addEventListener("click", () => mostrarSeccion(b.dataset.seccion)));
+
+        /* CARRITO */
+        const cantCarrito = document.getElementById("cantCarrito");
+
+        function actualizarCarrito(cantidad) {
+            cantCarrito.textContent = cantidad;
+        }
+    </script>
+</body>
+
+</html>

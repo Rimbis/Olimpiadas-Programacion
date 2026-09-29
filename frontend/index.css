@@ -1,0 +1,332 @@
+:root { /*Variables para el fondo y el texto*/
+    --tinta: #0f2a3d;
+    --mar: #2b7a9b;
+    --cielo: #eaf2f7;
+    --papel: #f7f9fb;
+    --senal: #32f2d8;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    font-family: "Segoe UI", system-ui, sans-serif;
+    color: var(--tinta);
+    background: var(--papel);
+}
+
+/* Encabezado*/
+.encabezado {
+    background: var(--tinta);
+    padding: 18px 24px;
+    border-bottom: 4px solid var(--senal);
+
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px 24px;
+}
+
+.encabezado h1 {
+    margin: 0;
+    color: #fff;
+    font-size: 1.8rem;
+    letter-spacing: 0.12em;
+}
+
+
+.opciones {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+}
+ 
+.selector select {
+    padding: 8px 10px;
+    border: 1px solid #4b6b80;
+    border-radius: 6px;
+    background: var(--tinta);
+    color: #fff;
+    font-size: 0.95rem;
+    cursor: pointer;
+}
+ 
+.usuario {
+    display: flex;
+    gap: 8px;
+    margin-left: 6px;
+}
+ 
+.btnLink {
+    padding: 8px 14px;
+    border: 1px solid #fff;
+    border-radius: 6px;
+    color: #fff;
+    text-decoration: none;
+    font-size: 0.95rem;
+}
+ 
+ 
+.btnLink.destacado {
+    background: var(--senal);
+    border-color: var(--senal);
+    color: var(--tinta);
+    font-weight: 600;
+}
+ 
+.btnLink.destacado:hover { background: #56d7db; }
+ 
+.selector select:focus-visible,
+.btnLink.destacado:focus-visible {
+    outline: 3px solid var(--senal);
+    outline-offset: 2px;
+}
+ 
+/* Texto solo para lectores de pantalla */
+.sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+}
+ 
+main {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 24px 16px 48px;
+    display: grid;
+    gap: 32px;
+}
+
+/*  Carrusel de diapositivas */
+.carrusel {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    border-radius: 10px;
+    background: var(--tinta);
+}
+
+.cuerpoCarrusel {
+    display: flex;
+    height: 100%;
+    transition: transform 0.5s ease;
+}
+
+.slide {
+    flex: 0 0 100%;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.flecha {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 44px;
+    height: 44px;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(15, 42, 61, 0.6);
+    color: #fff;
+    font-size: 1.3rem;
+    cursor: pointer;
+}
+
+.flecha:hover { background: rgba(15, 42, 61, 0.9); }
+.prev { left: 12px; }
+.next { right: 12px; }
+
+.puntos {
+    position: absolute;
+    bottom: 12px;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+}
+
+.punto {
+    width: 12px;
+    height: 12px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+}
+
+.punto.activo { background: var(--senal); }
+
+.flecha:focus-visible,
+.punto:focus-visible,
+.formulario button:focus-visible,
+.formulario input:focus-visible {
+    outline: 3px solid var(--senal);
+    outline-offset: 2px;
+}
+
+/*Buscador*/
+.buscador h2 {
+    margin: 0 0 12px;
+    font-size: 1.3rem;
+}
+
+.formulario {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.formulario input {
+    flex: 1 1 200px;
+    padding: 10px 12px;
+    border: 1px solid #b8c9d4;
+    border-radius: 6px;
+    font-size: 1rem;
+    background: #fff;
+}
+
+.formulario button {
+    padding: 10px 24px;
+    border: 0;
+    border-radius: 6px;
+    background: var(--mar);
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.formulario button:hover { background: var(--tinta); }
+
+#mensaje {
+    min-height: 1.4em;
+    margin: 8px 0;
+    color: #a33;
+}
+
+#map {
+    height: 400px;
+    border-radius: 10px;
+    border: 1px solid #b8c9d4;
+}
+
+/* Responsive y accesibilidad */
+@media (max-width: 600px) {
+    .encabezado h1 { font-size: 1.4rem; }
+    #map { height: 300px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .cuerpoCarrusel { transition: none; }
+}
+
+
+/* Contenedor principal de dos columnas */
+.contenedor {
+    display: flex;
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+/* Forzamos al main dentro del contenedor a ocupar el espacio restante */
+.contenedor main {
+    flex: 1;
+    min-width: 0;
+    max-width: none; /* Anulamos el 900px global para que respete el diseño de dos columnas */
+    margin: 0;
+    padding: 24px 16px 48px;
+    display: grid;
+    gap: 32px;
+}
+
+/* Estilos corregidos del aside/lateral para que luzca y no se oculte */
+.lateral {
+    flex: 0 0 220px;
+    min-width: 220px; /* Evita que el navegador colapse el aside */
+    align-self: flex-start;
+    position: sticky;
+    top: 0;
+    padding: 24px 0 24px 16px;
+    background-color: var(--papel); /* Hereda el fondo correcto */
+    z-index: 10;
+}
+ 
+.lateral nav {
+    display: grid;
+    gap: 4px;
+}
+ 
+.navBtn {
+    padding: 10px 14px;
+    border: 0;
+    border-left: 4px solid transparent;
+    border-radius: 0 6px 6px 0;
+    background: transparent;
+    color: var(--tinta); /* Texto oscuro visible sobre el fondo */
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+ 
+.navBtn:hover { background: var(--cielo); }
+ 
+.navBtn.activo {
+    background: var(--cielo);
+    border-left-color: var(--mar);
+    font-weight: 600;
+}
+ 
+.navBtn:focus-visible {
+    outline: 3px solid var(--senal);
+    outline-offset: 2px;
+}
+ 
+.panel {
+    display: grid;
+    gap: 32px;
+    align-content: start;
+}
+ 
+.panel[hidden] { display: none; }
+ 
+.panel h2 { margin: 0; font-size: 1.3rem; }
+ 
+.aviso { margin: 0; color: #5b7686; }
+ 
+.listaProductos {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 8px;
+}
+ 
+/* Número del carrito */
+.contador {
+    display: inline-block;
+    min-width: 1.5em;
+    margin-left: 4px;
+    padding: 0 6px;
+    border-radius: 999px;
+    background: var(--senal);
+    color: var(--tinta);
+    font-weight: 600;
+    text-align: center;
+}
+ 
+@media (max-width: 800px) {
+    .contenedor { flex-direction: column; }
+    .lateral { position: static; flex: none; width: 100%; padding: 12px 16px 0; }
+    .lateral nav { display: flex; overflow-x: auto; gap: 8px; }
+    .navBtn { white-space: nowrap; border-left: 0; border-bottom: 3px solid transparent; border-radius: 6px 6px 0 0; }
+    .navBtn.activo { border-bottom-color: var(--mar); }
+}
