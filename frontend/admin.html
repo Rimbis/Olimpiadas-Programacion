@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de administración - AeroPlate</title>
+    <link rel="stylesheet" href="adm.css">
+</head>
+<body>
+    <header>
+        <h1>Panel del Jefe de Ventas / Administrador. </h1>
+        <nav>
+            <!--pongo funciones a llamar para la muestra y gestión de productos, luego lo completamos con las funciones reales xd-->
+            <button onclick="mostrarSeccion('productos')"> Ver productos</button>
+            <button onclick="mostrarSeccion('pedidos')"> Gestionar Pedidos</button>
+            <button onclick="mostrarSeccion('cuentas')">  Estado de Cuentas</button>
+        </nav>
+
+    </header>
+    <main>
+        <!-- Seccion de cargar productos-->
+
+        <section id="seccion-productos" class="panel-seccion">
+            <h2> Alta de productos (Paquetes / Servicios)</h2>
+            <form id="form-producto">
+                <input type="text" id="codigo" placeholder="Codigo de producto" required>
+                <input type="text" id="descripcion" placeholder="Descripción" required>
+                <input type="number" id="precio" placeholder="precio" required>
+
+                <button type="submit"> Guardar producto</button>
+
+            </form>
+        </section>
+        <!-- Segundo seccion de destion de pedidos pendientes-->
+         <section id="seccion-pedidos" class="panel-seccion" style="display: none;">
+            <h2> Pedidos Pendientes y Entregas</h2>
+            <div id="lista-pedidos">
+                <!--esto lo cargamos directamente desde el backend-->
+
+            </div>
+
+         </section>
+         <!-- 3er seccion de  Estado de cuenta-->
+         <section id="seccion-cuentas" class="panel-seccion" style="display: none;">
+            <h2> Estado de Cuentas y Facturas</h2>
+            <div id="info-cuentas">
+                <!-- Datos ordenados por fecha y cliente-->
+            </div>
+
+         </section>
+    </main>
+    <!-- script para la logica de la vista-->s
+    <script src="admin.js"></script>
+    
+</body>
+</html>
