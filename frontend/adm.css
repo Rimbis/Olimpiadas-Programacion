@@ -1,0 +1,137 @@
+:root { /* Variables de color heredadas del sistema de Mari */
+    --tinta: #0f2a3d;
+    --mar: #2b7a9b;
+    --cielo: #eaf2f7;
+    --papel: #f7f9fb;
+    --senal: #32f2d8;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    font-family: "Segoe UI", system-ui, sans-serif;
+    color: var(--tinta);
+    background: var(--papel);
+}
+
+/* Encabezado idéntico al de la plataforma */
+header {
+    background: var(--tinta);
+    padding: 18px 24px;
+    border-bottom: 4px solid var(--senal);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px 24px;
+}
+
+header h1 {
+    margin: 0;
+    color: #fff;
+    font-size: 1.8rem;
+    letter-spacing: 0.12em;
+}
+
+header nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+header nav button {
+    padding: 8px 14px;
+    border: 1px solid #fff;
+    border-radius: 6px;
+    background: transparent;
+    color: #fff;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+header nav button:hover {
+    background: var(--senal);
+    border-color: var(--senal);
+    color: var(--tinta);
+    font-weight: 600;
+}
+
+/* Contenedor principal adaptable */
+main {
+    max-width: 900px;
+    margin: 32px auto;
+    padding: 24px 16px;
+    background: #fff;
+    border-radius: 10px;
+    border: 1px solid #b8c9d4;
+    box-shadow: 0 4px 6px rgba(15, 42, 61, 0.05);
+    display: grid;
+    gap: 24px;
+}
+
+.panel-seccion h2 {
+    margin-top: 0;
+    color: var(--tinta);
+    font-size: 1.4rem;
+    border-bottom: 2px solid var(--cielo);
+    padding-bottom: 8px;
+}
+
+/* Formularios de administración */
+form {
+    display: grid;
+    gap: 12px;
+}
+
+form input {
+    padding: 10px 12px;
+    border: 1px solid #b8c9d4;
+    border-radius: 6px;
+    font-size: 1rem;
+    background: #fff;
+}
+
+form input:focus {
+    outline: 3px solid var(--senal);
+    outline-offset: 2px;
+    border-color: var(--mar);
+}
+
+form button[type="submit"] {
+    padding: 12px 24px;
+    border: 0;
+    border-radius: 6px;
+    background: var(--mar);
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+form button[type="submit"]:hover {
+    background: var(--tinta);
+}
+
+/* Tablas o tarjetas para listados de pedidos y cuentas */
+#lista-pedidos, #info-cuentas {
+    display: grid;
+    gap: 12px;
+}
+
+.item-pedido, .item-cuenta {
+    padding: 14px;
+    background: var(--cielo);
+    border-radius: 6px;
+    border-left: 4px solid var(--mar);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Responsive para celulares */
+@media (max-width: 600px) {
+    header h1 { font-size: 1.4rem; }
+    header nav { width: 100%; overflow-x: auto; }
+}
