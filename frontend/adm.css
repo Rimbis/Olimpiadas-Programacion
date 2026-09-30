@@ -135,3 +135,12 @@ form button[type="submit"]:hover {
     header h1 { font-size: 1.4rem; }
     header nav { width: 100%; overflow-x: auto; }
 }
+.logo{
+    width: 10%;
+    height: 15%;
+    border-radius: 5px;
+    border-color: #2b7a9b;
+    border-width: 4px;
+    outline-style: double;
+    outline-color: #2b7a9b;
+}
