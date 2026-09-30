@@ -1,5 +1,6 @@
 """Endpoints del catálogo de paquetes (DFD 2.1 y 5.1/5.2)."""
 from fastapi import APIRouter, Depends, HTTPException, status
+from postgrest.exceptions import APIError
 
 from app.auth import solo_admin, usuario_actual
 from app.db import sb
@@ -10,8 +11,8 @@ router = APIRouter(prefix="/paquetes", tags=["Catálogo"])
 
 @router.get("")
 def listar_paquetes(_: dict = Depends(usuario_actual)) -> list[dict]:
-    """Lista los paquetes activos (en lista, sin imágenes)."""
-    return sb.table("paquetes_turisticos").select("*").eq("activo", True).execute().data
+    """Lista los paquetes (en lista, sin imágenes)."""
+    return sb.table("paquetes_turisticos").select("*").execute().data
 
 
 @router.get("/{paquete_id}")
@@ -29,5 +30,13 @@ def crear_paquete(paquete: PaqueteIn, _: dict = Depends(solo_admin)) -> dict:
     datos = paquete.model_dump(mode="json")
     try:
         return sb.table("paquetes_turisticos").insert(datos).execute().data[0]
-    except Exception:
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, "No se pudo guardar (¿código repetido?)")
+    except APIError as e:
+        print("ERROR POST /paquetes:", e.code, e.message, e.details)
+        if e.code == "23505":
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Ya existe un paquete con ese código")
+        if e.code == "23503":
+            raise HTTPException(
+                status.HTTP_400_BAD_REQUEST,
+                f"Un id de destino, hotel, vuelo o seguro no existe ({e.details})",
+            )
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, f"No se pudo guardar: {e.message}")

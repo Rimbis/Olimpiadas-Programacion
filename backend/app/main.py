@@ -9,7 +9,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-from app.routers import auth, catalogo
+from app.routers import admin, auth, catalogo, compras
 
 app = FastAPI(title="Aeroplate API", version="0.1.0")
 
@@ -22,7 +22,9 @@ app.add_middleware(
 
 app.include_router(auth.router)
 app.include_router(catalogo.router)
-# TODO: routers de compras, pagos, pedidos, admin y notificaciones.
+app.include_router(compras.router)
+app.include_router(admin.router)
+# TODO: routers de pagos y notificaciones.
 
 # El frontend (HTML/JS) se sirve desde la carpeta /frontend, en la misma URL.
 # Debe montarse al final para no tapar las rutas de la API.

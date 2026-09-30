@@ -33,7 +33,7 @@ def registro(datos: RegistroIn) -> dict:
             }
         ).execute()
     except Exception as e:                                # antes: except Exception:
-        print("ERROR INSERT CLIENTE:", repr(e))           # línea nueva, temporal
+        
         sb.auth.admin.delete_user(user_id)  # no dejar cuentas a medias
         raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "Error al crear el perfil")
     return {"mensaje": "Cuenta creada"}
