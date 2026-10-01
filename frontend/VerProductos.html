@@ -1,22 +1,135 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ver Productos Adm</title>
+    <title>Ver Productos - AeroPlata</title>
     <link rel="stylesheet" href="adm.css">
+    <style>
+        .tabla-productos {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .tabla-productos th, .tabla-productos td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        .tabla-productos th {
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        .mensaje-info {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body>
     <header>
-        <img src="img/Logo-AeroPlate.jpg" class="logo">
-
+        <img src="img/logo-AeroPlata.jpg" alt="Logo-AeroPlata" class="logo">
         <h1>Panel de Jefe de Ventas : Lista Productos</h1>
         <nav>
-            <a href="admin.html"> <button> Alta de productos</button></a>
-            <a href="GestionarPedidos.html"><button>GestionarPedidos</button></a>
-
+            <a href="admin.html"><button>Alta de productos</button></a>
+            <a href="GestionarPedidos.html"><button>Gestionar Pedidos</button></a>
+            <a href="EstadoDeCuentas.html"><button>Estado de Cuentas</button></a>
+            <button id="btn-logout" style="background-color: #d9534f; color: white;">Cerrar sesión</button>
         </nav>
     </header>
-    
+
+    <main style="padding: 20px;">
+        <h2>Listado de Paquetes Turísticos Disponibles</h2>
+        <p id="mensaje-estado" class="mensaje-info">Cargando productos...</p>
+        
+        <table class="tabla-productos" id="tabla-paquetes" style="display: none;">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Código</th>
+                    <th>Tipo</th>
+                    <th>Título</th>
+                    <th>Descripción</th>
+                    <th>Precio Total</th>
+                    <th>Noches</th>
+                </tr>
+            </thead>
+            <tbody id="cuerpo-tabla">
+                <!-- Los datos se insertarán dinámicamente desde JavaScript -->
+            </tbody>
+        </table>
+    </main>
+
+    <script>
+        const API_URL = "https://aeroplate-backend.onrender.com";
+
+        // Verificar sesión y rol
+        const token = localStorage.getItem("token");
+        const rol = localStorage.getItem("rol");
+
+        if (!rol || (rol !== "admin" && rol !== "jefe_ventas" && rol !== "ventas")) {
+            alert("Acceso no autorizado. Inicia sesión como administrador.");
+            window.location.href = "login.html";
+        }
+
+        async function cargarProductos() {
+            const mensajeEstado = document.getElementById("mensaje-estado");
+            const tablaPaquetes = document.getElementById("tabla-paquetes");
+            const cuerpoTabla = document.getElementById("cuerpo-tabla");
+
+            try {
+                const respuesta = await fetch(`${API_URL}/paquetes`, {
+                    method: "GET",
+                    headers: {
+                        "Authorization": `Bearer ${token}`
+                    }
+                });
+
+                if (respuesta.ok) {
+                    const paquetes = await respuesta.json();
+                    
+                    if (paquetes.length === 0) {
+                        mensajeEstado.textContent = "No hay paquetes registrados en el sistema.";
+                        return;
+                    }
+
+                    mensajeEstado.style.display = "none";
+                    tablaPaquetes.style.display = "table";
+                    cuerpoTabla.innerHTML = "";
+
+                    paquetes.forEach(p => {
+                        const fila = document.createElement("tr");
+                        fila.innerHTML = `
+                            <td>${p.id_paquete || p.id || '-'}</td>
+                            <td>${p.codigo_paquete}</td>
+                            <td>${p.tipo_paquete}</td>
+                            <td>${p.titulo}</td>
+                            <td>${p.descripcion}</td>
+                            <td>$${p.precio_total}</td>
+                            <td>${p.cantidad_noches}</td>
+                        `;
+                        cuerpoTabla.appendChild(fila);
+                    });
+                } else {
+                    mensajeEstado.style.color = "red";
+                    mensajeEstado.textContent = "Error al obtener los productos del servidor.";
+                }
+            } catch (error) {
+                console.error("Error de conexión:", error);
+                mensajeEstado.style.color = "red";
+                mensajeEstado.textContent = "Error de conexión al intentar cargar los productos.";
+            }
+        }
+
+        // Ejecutar la carga al abrir la página
+        cargarProductos();
+
+        // Botón para cerrar sesión
+        document.getElementById("btn-logout").addEventListener("click", () => {
+            localStorage.removeItem("token");
+            localStorage.removeItem("rol");
+            window.location.href = "login.html";
+        });
+    </script>
 </body>
 </html>
