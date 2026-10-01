@@ -43,11 +43,12 @@
         // URL de tu backend desplegado en Render
         const API_URL = "https://aeroplate-backend.onrender.com"; 
 
-        // Verificar si el usuario está logueado y es admin
+        // Verificar si el usuario tiene rol válido (incluyendo 'ventas')
         const token = localStorage.getItem("access_token");
         const rol = localStorage.getItem("rol");
 
-        if (!token || (rol !== "admin" && rol !== "jefe_ventas")) {
+        // Permitimos admin, jefe_ventas o ventas para que no te rebloquee
+        if (!rol || (rol !== "admin" && rol !== "jefe_ventas" && rol !== "ventas")) {
             alert("Acceso no autorizado. Inicia sesión como administrador.");
             window.location.href = "login.html";
         }
