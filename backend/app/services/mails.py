@@ -1,25 +1,57 @@
 """Servicio de notificaciones por mail (DFD 6).
 
-Arma el mail al cliente (6.1) y al sector de la empresa (6.2), los envía por
-SMTP (6.3) y deja el registro en la tabla `mails` (6.4).
+Arma el mail al cliente (6.1) y al sector de la empresa (6.2), los envía (6.3)
+y deja el registro en la tabla `mails` (6.4).
 
-Si no hay credenciales SMTP en el `.env`, el mail no sale pero igual se
-registra con estado "simulado": sirve para probar y para el video.
+Orden de envío:
+1. Brevo por API HTTPS, si hay `BREVO_API_KEY` y `MAIL_REMITENTE`
+   (funciona en Render gratis, que bloquea los puertos SMTP).
+2. SMTP, si hay `SMTP_USER` y `SMTP_PASSWORD` (para correr en local).
+3. Simulado: el mail no sale pero igual se registra con estado "simulado".
 Una falla de mail nunca rompe la operación que lo disparó.
 """
 import smtplib
 from datetime import datetime, timezone
 from email.message import EmailMessage
 
+import httpx
+
 from app.config import settings
 from app.db import sb
 
 
+BREVO_URL = "https://api.brevo.com/v3/smtp/email"
+
+
+def _enviar_brevo(destinatario: str, asunto: str, cuerpo: str) -> str:
+    """Envía por la API HTTPS de Brevo. Devuelve 'enviado' o 'error'."""
+    try:
+        resp = httpx.post(
+            BREVO_URL,
+            headers={
+                "api-key": settings.brevo_api_key,
+                "accept": "application/json",
+                "content-type": "application/json",
+            },
+            json={
+                "sender": {"name": "Aeroplate", "email": settings.mail_remitente},
+                "to": [{"email": destinatario}],
+                "subject": asunto,
+                "textContent": cuerpo,
+            },
+            timeout=15,
+        )
+        if resp.status_code in (200, 201):
+            return "enviado"
+        print("ERROR MAIL BREVO:", resp.status_code, resp.text)
+        return "error"
+    except Exception as e:
+        print("ERROR MAIL BREVO:", repr(e))
+        return "error"
+
+
 def _enviar_smtp(destinatario: str, asunto: str, cuerpo: str) -> str:
-    """Envía un mail y devuelve el estado: 'enviado', 'simulado' o 'error'."""
-    if not settings.smtp_user or not settings.smtp_password:
-        print(f"[MAIL SIMULADO] a {destinatario}: {asunto}")
-        return "simulado"
+    """Envía por SMTP. Devuelve 'enviado' o 'error'."""
     msg = EmailMessage()
     msg["From"] = settings.smtp_user
     msg["To"] = destinatario
@@ -34,6 +66,16 @@ def _enviar_smtp(destinatario: str, asunto: str, cuerpo: str) -> str:
     except Exception as e:
         print("ERROR MAIL:", repr(e))
         return "error"
+
+
+def _enviar(destinatario: str, asunto: str, cuerpo: str) -> str:
+    """Elige el medio de envío y devuelve 'enviado', 'simulado' o 'error'."""
+    if settings.brevo_api_key and settings.mail_remitente:
+        return _enviar_brevo(destinatario, asunto, cuerpo)
+    if settings.smtp_user and settings.smtp_password:
+        return _enviar_smtp(destinatario, asunto, cuerpo)
+    print(f"[MAIL SIMULADO] a {destinatario}: {asunto}")
+    return "simulado"
 
 
 def _registrar(
@@ -118,14 +160,14 @@ def _notificar(id_compra: int, evento: str) -> None:
     )
     asunto_c, cuerpo_c, asunto_s, cuerpo_s = _textos(evento, compra, cliente, paquetes)
 
-    estado = _enviar_smtp(cliente["email"], asunto_c, cuerpo_c)
+    estado = _enviar(cliente["email"], asunto_c, cuerpo_c)
     _registrar(compra["id_cliente"], id_compra, None, cliente["email"], asunto_c, cuerpo_c, estado)
 
     contactos = (
         sb.table("contactos_empresa").select("id, email").eq("activo", True).execute().data
     )
     for contacto in contactos:
-        estado = _enviar_smtp(contacto["email"], asunto_s, cuerpo_s)
+        estado = _enviar(contacto["email"], asunto_s, cuerpo_s)
         _registrar(
             compra["id_cliente"], id_compra, contacto["id"],
             contacto["email"], asunto_s, cuerpo_s, estado,

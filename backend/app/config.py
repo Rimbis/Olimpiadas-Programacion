@@ -10,8 +10,8 @@ class Settings(BaseSettings):
     """Variables de entorno de la aplicación.
 
     Obligatorias: las tres de Supabase. El resto es opcional: sin
-    `MP_ACCESS_TOKEN` el pago funciona en modo simulado, y sin `SMTP_USER`
-    los mails se registran en la tabla `mails` como "simulado".
+    `MP_ACCESS_TOKEN` el pago funciona en modo simulado, y sin `BREVO_API_KEY`
+    ni `SMTP_USER` los mails se registran en la tabla `mails` como "simulado".
     """
 
     supabase_url: str
@@ -22,7 +22,13 @@ class Settings(BaseSettings):
     mp_access_token: str = ""
     base_url: str = "http://localhost:8000"
 
-    # Envío de mails por SMTP (Gmail: contraseña de aplicación).
+    # Envío de mails por la API HTTPS de Brevo (funciona en Render gratis).
+    # `mail_remitente` debe ser un remitente verificado en Brevo.
+    brevo_api_key: str = ""
+    mail_remitente: str = ""
+
+    # Envío de mails por SMTP (respaldo para correr en local; Render gratis
+    # bloquea los puertos SMTP).
     smtp_host: str = "smtp.gmail.com"
     smtp_port: int = 587
     smtp_user: str = ""
