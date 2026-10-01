@@ -1,11 +1,131 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Gestionar Pedidos - AeroPlata</title>
+    <link rel="stylesheet" href="adm.css">
+    <style>
+        .tabla-pedidos {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .tabla-pedidos th, .tabla-pedidos td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        .tabla-pedidos th {
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        .mensaje-info {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body>
-    
+    <header>
+        <img src="img/logo-AeroPlata.jpg" alt="Logo-AeroPlata" class="logo">
+        <h1>Panel de Jefe de Ventas : Gestionar Pedidos</h1>
+        <nav>
+            <a href="admin.html"><button>Alta de productos</button></a>
+            <a href="VerProductos.html"><button>Ver productos</button></a>
+            <a href="EstadoDeCuentas.html"><button>Estado de Cuentas</button></a>
+            <button id="btn-logout" style="background-color: #d9534f; color: white;">Cerrar sesión</button>
+        </nav>
+    </header>
+
+    <main style="padding: 20px;">
+        <h2>Listado de Pedidos de Clientes</h2>
+        <p id="mensaje-estado" class="mensaje-info">Cargando pedidos...</p>
+        
+        <table class="tabla-pedidos" id="tabla-pedidos" style="display: none;">
+            <thead>
+                <tr>
+                    <th>ID Pedido</th>
+                    <th>Usuario</th>
+                    <th>Paquete</th>
+                    <th>Fecha</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody id="cuerpo-tabla-pedidos">
+                <!-- Los pedidos se cargarán dinámicamente -->
+            </tbody>
+        </table>
+    </main>
+
+    <script>
+        const API_URL = "https://aeroplate-backend.onrender.com";
+
+        // Verificar sesión y rol
+        const token = localStorage.getItem("token");
+        const rol = localStorage.getItem("rol");
+
+        if (!rol || (rol !== "admin" && rol !== "jefe_ventas" && rol !== "ventas")) {
+            alert("Acceso no autorizado. Inicia sesión como administrador.");
+            window.location.href = "login.html";
+        }
+
+        async function cargarPedidos() {
+            const mensajeEstado = document.getElementById("mensaje-estado");
+            const tablaPedidos = document.getElementById("tabla-pedidos");
+            const cuerpoTabla = document.getElementById("cuerpo-tabla-pedidos");
+
+            try {
+                // Ajustá la ruta del endpoint si en tu backend se llama diferente (ej: /pedidos o /compras)
+                const respuesta = await fetch(`${API_URL}/pedidos`, {
+                    method: "GET",
+                    headers: {
+                        "Authorization": `Bearer ${token}`
+                    }
+                });
+
+                if (respuesta.ok) {
+                    const pedidos = await respuesta.json();
+                    
+                    if (pedidos.length === 0) {
+                        mensajeEstado.textContent = "No hay pedidos registrados en el sistema.";
+                        return;
+                    }
+
+                    mensajeEstado.style.display = "none";
+                    tablaPedidos.style.display = "table";
+                    cuerpoTabla.innerHTML = "";
+
+                    pedidos.forEach(p => {
+                        const fila = document.createElement("tr");
+                        fila.innerHTML = `
+                            <td>${p.id_pedido || p.id || '-'}</td>
+                            <td>${p.usuario || p.id_usuario || '-'}</td>
+                            <td>${p.id_paquete || '-'}</td>
+                            <td>${p.fecha_pedido || '-'}</td>
+                            <td>${p.estado || 'Pendiente'}</td>
+                        `;
+                        cuerpoTabla.appendChild(fila);
+                    });
+                } else {
+                    mensajeEstado.style.color = "red";
+                    mensajeEstado.textContent = "Error al obtener los pedidos del servidor.";
+                }
+            } catch (error) {
+                console.error("Error de conexión:", error);
+                mensajeEstado.style.color = "red";
+                mensajeEstado.textContent = "Error de conexión al intentar cargar los pedidos.";
+            }
+        }
+
+        cargarPedidos();
+
+        // Botón para cerrar sesión
+        document.getElementById("btn-logout").addEventListener("click", () => {
+            localStorage.removeItem("token");
+            localStorage.removeItem("rol");
+            window.location.href = "login.html";
+        });
+    </script>
 </body>
 </html>
