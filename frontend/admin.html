@@ -30,8 +30,9 @@
                 <input type="number" step="0.01" id="precio_total" placeholder="Precio total" required>
                 <input type="number" id="cantidad_noches" placeholder="Cantidad de noches" required>
                 
-                <!-- IDs de relaciones requeridos por el backend -->
-                <input type="number" id="id_ubicacion_destino" placeholder="ID Ubicación Destino" required>
+                <!-- ID de ubicación corregido exactamente como lo pide el backend -->
+                <input type="number" id="id_ubi_destino" placeholder="ID Ubicación Destino" required>
+                
                 <input type="number" id="id_hotel" placeholder="ID Hotel" required>
                 <input type="number" id="id_vuelo" placeholder="ID Vuelo" required>
                 <input type="number" id="id_seguro_medico" placeholder="ID Seguro Médico" required>
@@ -66,7 +67,7 @@
                 descripcion: document.getElementById("descripcion").value,
                 precio_total: parseFloat(document.getElementById("precio_total").value),
                 cantidad_noches: parseInt(document.getElementById("cantidad_noches").value),
-                id_ubicacion_destino: parseInt(document.getElementById("id_ubicacion_destino").value),
+                id_ubi_destino: parseInt(document.getElementById("id_ubi_destino").value),
                 id_hotel: parseInt(document.getElementById("id_hotel").value),
                 id_vuelo: parseInt(document.getElementById("id_vuelo").value),
                 id_seguro_medico: parseInt(document.getElementById("id_seguro_medico").value)
@@ -91,7 +92,6 @@
                 } else {
                     const errorData = await respuesta.json();
                     mensajeP.style.color = "red";
-                    // Limpiamos la visualización del error por si viene en formato de lista u objeto
                     const detalleError = Array.isArray(errorData.detail) 
                         ? errorData.detail.map(err => `${err.loc.join('.')}: ${err.msg}`).join(', ') 
                         : (errorData.detail || "No se pudo guardar el paquete");
