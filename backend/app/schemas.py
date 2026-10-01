@@ -1,8 +1,9 @@
 """Modelos Pydantic: definen y validan los datos que entran y salen de la API."""
+from datetime import datetime
 from decimal import Decimal
 from typing import Literal
 
-from pydantic import BaseModel, EmailStr, Field, model_validator
+from pydantic import BaseModel, EmailStr, Field, field_validator, model_validator
 
 
 class RegistroIn(BaseModel):
@@ -85,3 +86,86 @@ class ModificarCompraIn(BaseModel):
     """Nueva lista de pasajeros (con asientos) para un pedido pendiente."""
 
     pasajeros: list[PasajeroIn] = Field(min_length=1, max_length=9)
+
+
+class UbicacionDestinoIn(BaseModel):
+    """Datos para cargar una ciudad de destino/hospedaje."""
+
+    ciudad: str = Field(min_length=1, max_length=100)
+    pais: str = Field(min_length=1, max_length=100)
+
+
+class AeropuertoIn(BaseModel):
+    """Datos para cargar un aeropuerto."""
+
+    ciudad: str = Field(min_length=1, max_length=100)
+    pais: str = Field(min_length=1, max_length=100)
+    codigo_aeropuerto: str = Field(pattern=r"^[A-Za-z]{3}$")
+
+    @field_validator("codigo_aeropuerto")
+    @classmethod
+    def _mayusculas(cls, v: str) -> str:
+        """Guarda el código IATA siempre en mayúsculas (ej: EZE)."""
+        return v.upper()
+
+
+class SeguroMedicoIn(BaseModel):
+    """Datos para cargar un seguro médico."""
+
+    nombre: str = Field(min_length=1, max_length=100)
+    empresa: str = Field(min_length=1, max_length=100)
+
+
+class HotelIn(BaseModel):
+    """Datos para cargar un hotel (id_ubicacion = ciudad de destino)."""
+
+    id_ubicacion: int
+    nombre_hotel: str = Field(min_length=1, max_length=150)
+    descripcion: str = Field(min_length=1)
+    precio_noche: Decimal = Field(ge=0)
+    estrellas: int = Field(ge=1, le=5)
+
+
+class VueloIn(BaseModel):
+    """Datos para cargar un vuelo, con sus escalas en orden (puede no tener).
+
+    `id_destino` es la ciudad de hospedaje; origen/destino aéreo y las escalas
+    son ids de `ubicacion_aeropuerto`. `cantidad_escalas` la calcula el backend.
+    """
+
+    id_ubi_aereo_origen: int
+    id_ubi_aereo_destino: int
+    id_destino: int
+    fecha_ida: datetime
+    fecha_vuelta: datetime
+    clase: str = Field(min_length=1, max_length=50)
+    escalas: list[int] = Field(default_factory=list, max_length=5)
+
+    @model_validator(mode="after")
+    def _coherente(self):
+        """Valida fechas, que origen y destino difieran y que las escalas sean válidas."""
+        try:
+            if self.fecha_vuelta <= self.fecha_ida:
+                raise ValueError("La fecha de vuelta debe ser posterior a la de ida")
+        except TypeError:
+            raise ValueError("Usá fechas con o sin zona horaria en ambas, no mezcladas")
+        if self.id_ubi_aereo_origen == self.id_ubi_aereo_destino:
+            raise ValueError("El aeropuerto de origen y el de destino no pueden ser el mismo")
+        if len(set(self.escalas)) != len(self.escalas):
+            raise ValueError("Hay escalas repetidas")
+        if {self.id_ubi_aereo_origen, self.id_ubi_aereo_destino} & set(self.escalas):
+            raise ValueError("Una escala no puede ser el origen ni el destino del vuelo")
+        return self
+
+
+class EscalasIn(BaseModel):
+    """Nueva lista de escalas (ids de aeropuerto, en orden) de un vuelo existente."""
+
+    escalas: list[int] = Field(max_length=5)
+
+    @model_validator(mode="after")
+    def _sin_repetidas(self):
+        """Impide escalas repetidas."""
+        if len(set(self.escalas)) != len(self.escalas):
+            raise ValueError("Hay escalas repetidas")
+        return self
