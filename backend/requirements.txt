@@ -1,1 +1,6 @@
-Flask
+fastapi
+uvicorn[standard]
+supabase
+httpx
+pydantic[email]
+pydantic-settings
