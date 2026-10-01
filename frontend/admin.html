@@ -43,11 +43,10 @@
         // URL de tu backend desplegado en Render
         const API_URL = "https://aeroplate-backend.onrender.com"; 
 
-        // Verificar si el usuario tiene rol válido (incluyendo 'ventas')
-        const token = localStorage.getItem("access_token");
+        // Verificar si el usuario está logueado leyendo la clave correcta ('token') y aceptando el rol 'ventas'
+        const token = localStorage.getItem("token");
         const rol = localStorage.getItem("rol");
 
-        // Permitimos admin, jefe_ventas o ventas para que no te rebloquee
         if (!rol || (rol !== "admin" && rol !== "jefe_ventas" && rol !== "ventas")) {
             alert("Acceso no autorizado. Inicia sesión como administrador.");
             window.location.href = "login.html";
@@ -98,7 +97,7 @@
 
         // Botón para cerrar sesión
         document.getElementById("btn-logout").addEventListener("click", () => {
-            localStorage.removeItem("access_token");
+            localStorage.removeItem("token");
             localStorage.removeItem("rol");
             window.location.href = "login.html";
         });
