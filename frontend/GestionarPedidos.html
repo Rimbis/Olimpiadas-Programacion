@@ -28,7 +28,6 @@
 </head>
 <body>
     <header>
-        <img src="img/logo-AeroPlata.jpg" alt="Logo-AeroPlata" class="logo">
         <h1>Panel de Jefe de Ventas : Gestionar Pedidos</h1>
         <nav>
             <a href="admin.html"><button>Alta de productos</button></a>
@@ -39,16 +38,16 @@
     </header>
 
     <main style="padding: 20px;">
-        <h2>Listado de Pedidos de Clientes</h2>
+        <h2>Listado de Pedidos y Compras de Clientes</h2>
         <p id="mensaje-estado" class="mensaje-info">Cargando pedidos...</p>
         
         <table class="tabla-pedidos" id="tabla-pedidos" style="display: none;">
             <thead>
                 <tr>
-                    <th>ID Pedido</th>
+                    <th>ID Compra</th>
                     <th>Usuario</th>
                     <th>Paquete</th>
-                    <th>Fecha</th>
+                    <th>Detalles / Fecha</th>
                     <th>Estado</th>
                 </tr>
             </thead>
@@ -76,8 +75,8 @@
             const cuerpoTabla = document.getElementById("cuerpo-tabla-pedidos");
 
             try {
-                // Ajustá la ruta del endpoint si en tu backend se llama diferente (ej: /pedidos o /compras)
-                const respuesta = await fetch(`${API_URL}/pedidos`, {
+                // Apuntamos al endpoint de compras verificado en el backend
+                const respuesta = await fetch(`${API_URL}/compras`, {
                     method: "GET",
                     headers: {
                         "Authorization": `Bearer ${token}`
@@ -99,11 +98,11 @@
                     pedidos.forEach(p => {
                         const fila = document.createElement("tr");
                         fila.innerHTML = `
-                            <td>${p.id_pedido || p.id || '-'}</td>
-                            <td>${p.usuario || p.id_usuario || '-'}</td>
+                            <td>${p.id_compra || p.id || '-'}</td>
+                            <td>${p.id_cliente || p.usuario || '-'}</td>
                             <td>${p.id_paquete || '-'}</td>
-                            <td>${p.fecha_pedido || '-'}</td>
-                            <td>${p.estado || 'Pendiente'}</td>
+                            <td>${p.fecha || p.fecha_compra || '-'}</td>
+                            <td>${p.estado || 'Registrado'}</td>
                         `;
                         cuerpoTabla.appendChild(fila);
                     });
