@@ -42,6 +42,8 @@ def crear_compra(
                 "p_pasajeros": [p.model_dump(mode="json") for p in compra.pasajeros],
             },
         ).execute().data
+
+     
     except APIError as e:
         msg = e.message or ""
         if e.code == "23505":
@@ -53,6 +55,8 @@ def crear_compra(
         if "PAQUETE_SIN_VUELO" in msg:
             raise HTTPException(status.HTTP_400_BAD_REQUEST, "El paquete no tiene vuelo asignado")
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "No se pudo crear la compra")
+
+   
 
 
 @router.get("")

@@ -9,9 +9,12 @@ from app.services.mails import notificar_compra
 
 
 def vencer_compras() -> list[int]:
-    """Vence las compras pendientes de más de 15 min y devuelve sus ids."""
-    return sb.rpc("vencer_compras").execute().data or []
-
+       """Vence las compras pendientes de más de 15 min y devuelve sus ids."""
+       try:
+           return sb.rpc("vencer_compras").execute().data or []
+       except Exception as e:
+           print("ERROR vencer_compras:", repr(e))
+           return []
 
 def notificar_vencidas(ids: list[int]) -> None:
     """Envía el mail de 'compra vencida' de cada id."""
