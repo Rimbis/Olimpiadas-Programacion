@@ -8,12 +8,15 @@
 </head>
 <body>
     <header>
+        <img src="img/Logo-AeroPlate.jpg" alt="Logo-AeroPlate" class="logo">
         <h1>Panel del Jefe de Ventas / Administrador. </h1>
+
         <nav>
+            
             <!--pongo funciones a llamar para la muestra y gestión de productos, luego lo completamos con las funciones reales xd-->
-            <button onclick="mostrarSeccion('productos')"> Ver productos</button>
-            <button onclick="mostrarSeccion('pedidos')"> Gestionar Pedidos</button>
-            <button onclick="mostrarSeccion('cuentas')">  Estado de Cuentas</button>
+            <a href="VerProductos.html"><button onclick="mostrarSeccion('productos')"> Ver productos</button></a>
+            <a href="GestionarPedidos.html"><button onclick="mostrarSeccion('pedidos')"> Gestionar Pedidos</button></a>
+            <a href="EstadoDeCuentas.html"><button onclick="mostrarSeccion('cuentas')">  Estado de Cuentas</button></a>
         </nav>
 
     </header>
@@ -49,7 +52,7 @@
 
          </section>
     </main>
-    <!-- script para la logica de la vista-->s
+    <!-- script para la logica de la vista-->
     <script src="admin.js"></script>
     
 </body>
