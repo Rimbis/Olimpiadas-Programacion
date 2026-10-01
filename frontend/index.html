@@ -12,6 +12,7 @@
 
 <body>
     <header class="encabezado">
+        <img src="img/Logo-AeroPlate.jpg" alt="Logo-AeroPlate" class="logo">
         <h1>AeroPlate</h1>
 
         <div class="opciones">
@@ -50,8 +51,6 @@
         <aside class="lateral" aria-label="Secciones">
             <nav>
                 <button class="navBtn activo" data-seccion="explorar" data-texto="navExplorar">Explorar</button>
-                <button class="navBtn" data-seccion="vuelos" data-texto="navVuelos">Vuelos</button>
-                <button class="navBtn" data-seccion="hoteles" data-texto="navHoteles">Hoteles</button>
                 <button class="navBtn" data-seccion="paquetes" data-texto="navPaquetes">Paquetes turísticos</button>
             </nav>
         </aside>
@@ -61,10 +60,10 @@
                 <!-- CARRUSEL -->
                 <section class="carrusel" aria-label="Destinos destacados">
                     <div class="cuerpoCarrusel">
-                        <img class="slide" src="img/foto1.jpg" alt="Destino 1" />
-                        <img class="slide" src="img/foto2.jpg" alt="Destino 2" />
-                        <img class="slide" src="img/foto3.jpg" alt="Destino 3" />
-                        <img class="slide" src="img/foto4.jpg" alt="Destino 4" />
+                        <img class="slide" src="img/Caribe.jpg" alt="Destino 1" />
+                        <img class="slide" src="img/MachuPichu.jpg" alt="Destino 2" />
+                        <img class="slide" src="img/Miami.webp" alt="Destino 3" />
+                        <img class="slide" src="img/Ushuaia.jpg" alt="Destino 4" />
                     </div>
                     <button class="flecha prev" aria-label="Anterior">&#10094;</button>
                     <button class="flecha next" aria-label="Siguiente">&#10095;</button>
@@ -83,19 +82,6 @@
                     <div id="map"></div>
                 </section>
             </div>
-            <section class="panel" id="vuelos" hidden>
-                <h2 data-texto="navVuelos">Vuelos</h2>
-                <p class="aviso" data-texto="proximamente">Pronto verás aquí los productos disponibles.</p>
-                <ul class="listaProductos" id="lista-vuelos"></ul>
-            </section>
-
-            <!-- HOTELES -->
-            <section class="panel" id="hoteles" hidden>
-                <h2 data-texto="navHoteles">Hoteles</h2>
-                <p class="aviso" data-texto="proximamente">Pronto verás aquí los productos disponibles.</p>
-                <ul class="listaProductos" id="lista-hoteles"></ul>
-            </section>
-
             <!-- PAQUETES TURÍSTICOS -->
             <section class="panel" id="paquetes" hidden>
                 <h2 data-texto="navPaquetes">Paquetes turísticos</h2>
@@ -106,6 +92,7 @@
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="api.js"></script>
     <script>
         /* IDIOMA Y UBICACIÓN */
         /*Idioma: Solo Ingles y Español*/
@@ -128,10 +115,17 @@
                 p_ES: "España",
                 p_US: "Estados Unidos",
                 navExplorar: "Explorar",
-                navVuelos: "Vuelos",
-                navHoteles: "Hoteles",
                 navPaquetes: "Paquetes turísticos",
                 proximamente: "Pronto verás aquí los productos disponibles.",
+                cargando: "Cargando paquetes...",
+                necesitaLogin: "Iniciá sesión para ver los paquetes disponibles.",
+                sinPaquetes: "Todavía no hay paquetes cargados.",
+                errorPaquetes: "No se pudieron cargar los paquetes: ",
+                noches: "noches",
+                hola: "Hola,",
+                salir: "Salir",
+                agregar: "Agregar al carrito",
+                agregado: "✓ En el carrito",
             },
             en: {
                 ubicacion: "Location",
@@ -151,10 +145,17 @@
                 p_ES: "Spain",
                 p_US: "United States",
                 navExplorar: "Explore",
-                navVuelos: "Flights",
-                navHoteles: "Hotels",
                 navPaquetes: "Tour packages",
                 proximamente: "Soon you'll see the available products here.",
+                cargando: "Loading packages...",
+                necesitaLogin: "Log in to see the available packages.",
+                sinPaquetes: "No packages have been added yet.",
+                errorPaquetes: "Could not load the packages: ",
+                noches: "nights",
+                hola: "Hi,",
+                salir: "Log out",
+                agregar: "Add to cart",
+                agregado: "✓ In cart",
             },
         };
 
@@ -315,6 +316,7 @@
             paneles.forEach(p => { p.hidden = p.id !== id; }); // solo una sección visible
             botonesNav.forEach(b => b.classList.toggle("activo", b.dataset.seccion === id));
             if (id === "explorar") map.invalidateSize(); // el mapa recalcula su tamaño al volver a mostrarse
+            if (id === "paquetes") cargarPaquetes();
         }
 
         botonesNav.forEach(b => b.addEventListener("click", () => mostrarSeccion(b.dataset.seccion)));
@@ -325,6 +327,107 @@
         function actualizarCarrito(cantidad) {
             cantCarrito.textContent = cantidad;
         }
+
+
+        /* SESIÓN EN EL ENCABEZADO */
+        const cajaUsuario = document.getElementById("usuario");
+        const botonLogin = cajaUsuario.innerHTML; // guarda el botón "Iniciar sesión"
+
+        function pintarSesion(usuario) {
+            if (!usuario) {
+                cajaUsuario.innerHTML = botonLogin;
+                aplicarIdioma();
+                return;
+            }
+            const hola = document.createElement("span");
+            hola.dataset.texto = "hola";
+            hola.textContent = t("hola");
+
+            const nombre = document.createElement("strong");
+            nombre.textContent = usuario.nombre || usuario.email || "";
+
+            const salir = document.createElement("a");
+            salir.href = "#";
+            salir.className = "btnLink";
+            salir.dataset.texto = "salir";
+            salir.textContent = t("salir");
+            salir.addEventListener("click", (e) => {
+                e.preventDefault();
+                logout();
+                location.reload();
+            });
+
+            cajaUsuario.replaceChildren(hola, document.createTextNode(" "), nombre, document.createTextNode(" "), salir);
+        }
+
+        /* PAQUETES TURÍSTICOS (backend) */
+        function mostrarAviso(clave, extra = "") {
+            const aviso = document.querySelector("#paquetes .aviso");
+            aviso.hidden = false;
+            if (extra) {
+                aviso.removeAttribute("data-texto"); // mensaje dinámico, no se traduce solo
+                aviso.textContent = t(clave) + extra;
+            } else {
+                aviso.dataset.texto = clave; // sigue el cambio de idioma
+                aviso.textContent = t(clave);
+            }
+        }
+
+        async function cargarPaquetes() {
+            const lista = document.getElementById("lista-paquetes");
+            lista.innerHTML = "";
+
+            if (!getToken()) {
+                mostrarAviso("necesitaLogin");
+                return;
+            }
+            mostrarAviso("cargando");
+
+            try {
+                const paquetes = await apiFetch("/paquetes");
+                if (paquetes.length === 0) {
+                    mostrarAviso("sinPaquetes");
+                    return;
+                }
+                document.querySelector("#paquetes .aviso").hidden = true;
+
+                paquetes.forEach((p) => {
+                    const li = document.createElement("li");
+
+                    const titulo = document.createElement("h3");
+                    titulo.textContent = p.titulo;
+
+                    const desc = document.createElement("p");
+                    desc.textContent = p.descripcion;
+
+                    const info = document.createElement("small");
+                    info.textContent = `${p.tipo_paquete} · ${p.cantidad_noches} ${t("noches")} · $${p.precio_total}`;
+
+                    li.append(titulo, desc, info);
+
+                    if (!esAdmin()) { // el personal interno no compra
+                        const btn = document.createElement("button");
+                        const yaEsta = getCarrito().some((x) => x.id === p.id);
+                        btn.dataset.texto = yaEsta ? "agregado" : "agregar";
+                        btn.textContent = t(btn.dataset.texto);
+                        btn.addEventListener("click", () => {
+                            agregarAlCarrito(p); // ignora duplicados
+                            actualizarCarrito(getCarrito().length);
+                            btn.dataset.texto = "agregado";
+                            btn.textContent = t("agregado");
+                        });
+                        li.append(btn);
+                    }
+                    lista.appendChild(li);
+                });
+            } catch (e) {
+                mostrarAviso("errorPaquetes", e.message);
+            }
+        }
+
+        /* ¿Hay sesión guardada? */
+        iniciarSesionGuardada().then(pintarSesion);
+        actualizarCarrito(getCarrito().length);
     </script>
 </body>
 
