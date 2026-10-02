@@ -24,6 +24,17 @@
             margin-top: 20px;
             font-weight: bold;
         }
+        .btn-eliminar {
+            background-color: #d9534f;
+            color: white;
+            border: none;
+            padding: 6px 10px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        .btn-eliminar:hover {
+            background-color: #c9302c;
+        }
     </style>
 </head>
 <body>
@@ -52,6 +63,7 @@
                     <th>Descripción</th>
                     <th>Precio Total</th>
                     <th>Noches</th>
+                    <th>Acciones</th>
                 </tr>
             </thead>
             <tbody id="cuerpo-tabla">
@@ -90,6 +102,7 @@
                     
                     if (paquetes.length === 0) {
                         mensajeEstado.textContent = "No hay paquetes registrados en el sistema.";
+                        tablaPaquetes.style.display = "none";
                         return;
                     }
 
@@ -98,15 +111,19 @@
                     cuerpoTabla.innerHTML = "";
 
                     paquetes.forEach(p => {
+                        const paqueteId = p.id_paquete || p.id;
                         const fila = document.createElement("tr");
                         fila.innerHTML = `
-                            <td>${p.id_paquete || p.id || '-'}</td>
+                            <td>${paqueteId || '-'}</td>
                             <td>${p.codigo_paquete}</td>
                             <td>${p.tipo_paquete}</td>
                             <td>${p.titulo}</td>
                             <td>${p.descripcion}</td>
                             <td>$${p.precio_total}</td>
                             <td>${p.cantidad_noches}</td>
+                            <td>
+                                <button class="btn-eliminar" onclick="eliminarProducto(${paqueteId})">Eliminar</button>
+                            </td>
                         `;
                         cuerpoTabla.appendChild(fila);
                     });
@@ -118,6 +135,32 @@
                 console.error("Error de conexión:", error);
                 mensajeEstado.style.color = "red";
                 mensajeEstado.textContent = "Error de conexión al intentar cargar los productos.";
+            }
+        }
+
+        async function eliminarProducto(idPaquete) {
+            if (!confirm(`¿Estás seguro de que deseas eliminar el paquete ID #${idPaquete}?`)) {
+                return;
+            }
+
+            try {
+                const respuesta = await fetch(`${API_URL}/paquetes/${idPaquete}`, {
+                    method: "DELETE",
+                    headers: {
+                        "Authorization": `Bearer ${token}`
+                    }
+                });
+
+                if (respuesta.ok) {
+                    alert("Paquete eliminado correctamente.");
+                    cargarProductos(); // Recargar la tabla automáticamente
+                } else {
+                    const errorData = await respuesta.json().catch(() => ({}));
+                    alert("Error al eliminar: " + (errorData.detail || "No se pudo procesar la solicitud"));
+                }
+            } catch (error) {
+                console.error("Error de red:", error);
+                alert("Error de conexión al intentar eliminar el producto.");
             }
         }
 
@@ -133,3 +176,4 @@
     </script>
 </body>
 </html>
+
