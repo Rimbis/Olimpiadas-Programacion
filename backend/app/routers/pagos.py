@@ -139,7 +139,8 @@ def iniciar_pago(
         )
         r.raise_for_status()
     except httpx.HTTPError as e:
-        print("ERROR Mercado Pago (preferencia):", repr(e))
+        detalle = getattr(getattr(e, "response", None), "text", "")
+        print("ERROR Mercado Pago (preferencia):", repr(e), "DETALLE:", detalle)
         raise HTTPException(status.HTTP_502_BAD_GATEWAY, "No se pudo generar el pago")
     datos = r.json()
     return {
