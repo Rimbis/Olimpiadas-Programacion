@@ -75,7 +75,7 @@
             const cuerpoTabla = document.getElementById("cuerpo-tabla-pedidos");
 
             try {
-                // Apuntamos al endpoint de compras verificado en el backend
+                // Apuntamos correctamente al endpoint de administración en el backend
                 const respuesta = await fetch(`${API_URL}/compras/admin/todas`, {
                     method: "GET",
                     headers: {
@@ -128,3 +128,5 @@
     </script>
 </body>
 </html>
+
+    
