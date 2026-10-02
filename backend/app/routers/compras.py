@@ -154,3 +154,32 @@ def cancelar_pedido(
             )
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "No se pudo cancelar el pedido")
     return {"detail": "Pedido cancelado"}
+
+
+@router.delete("/admin/{compra_id}")
+def admin_cancelar_pedido(
+    compra_id: int, background: BackgroundTasks, usuario: dict = Depends(solo_admin)
+) -> dict:
+    """Permite al administrador cancelar cualquier pedido del sistema."""
+    _barrer(background)
+    try:
+        # Buscamos la compra primero para conocer el cliente y pasar su ID a la función RPC
+        compra_data = sb.table("compras").select("id_cliente").eq("id", compra_id).execute().data
+        if not compra_data:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "Pedido no encontrado")
+        
+        id_cliente = compra_data[0]["id_cliente"]
+        sb.rpc(
+            "cancelar_compra", {"p_id_compra": compra_id, "p_id_cliente": id_cliente}
+        ).execute()
+    except APIError as e:
+        msg = e.message or ""
+        if "COMPRA_INEXISTENTE" in msg:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "Pedido no encontrado")
+        if "NO_PENDIENTE" in msg:
+            raise HTTPException(
+                status.HTTP_400_BAD_REQUEST, "Solo se pueden cancelar pedidos pendientes"
+            )
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "No se pudo cancelar el pedido")
+    return {"detail": "Pedido cancelado por el administrador"}
+
