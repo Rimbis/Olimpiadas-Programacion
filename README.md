@@ -110,7 +110,7 @@ uvicorn app.main:app --reload --port 8000
 ```
 La API quedará corriendo localmente en http://localhost:8000 y podrás acceder a la documentación interactiva en http://localhost:8000/docs.
 
-###Arquitectura y Flujo de Pagos en Línea (DFD)
+### Arquitectura y Flujo de Pagos en Línea (DFD)
 ​Creación del Pedido: El usuario genera una compra desde el frontend desplegado en Vercel; el sistema registra el pedido en Supabase con estado pendiente.
 ​Inicio del Cobro (POST /pagos/{id}/iniciar): El backend en Render solicita a Mercado Pago una preferencia de pago enviando los ítems, el monto total y el ID del pedido como external_reference.
 ​Checkout y Retorno: El cliente abona en la plataforma oficial de Mercado Pago y es redirigido automáticamente de vuelta a la aplicación web.
