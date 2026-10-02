@@ -400,16 +400,16 @@ main {
     outline-style: double;
     outline-color: #2b7a9b;
 }
-
 .ayuda-container {
-    position: absolute;
-    top: 1.25rem;
-    right: 1.25rem;
+    position: relative;
+    display: inline-block;
+    float: right; 
+    margin-bottom: 10px;
 }
 
 .texto-ayuda {
     position: absolute;
-    top: 40px;
+    top: 100%;
     right: 0;
     width: 260px;
     background-color: #ffffff;
@@ -417,7 +417,7 @@ main {
     padding: 12px;
     border: 1px solid #e5e7eb;
     border-radius: 0.5rem;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
     font-size: 0.875rem;
     color: #374151;
     z-index: 50;
