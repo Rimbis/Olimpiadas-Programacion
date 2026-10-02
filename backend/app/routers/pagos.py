@@ -114,7 +114,7 @@ def iniciar_pago(
     if not settings.mp_access_token:
         return {"modo": "simulado", "confirmar_en": f"/pagos/{compra_id}/simular"}
 
-    base = settings.base_url.rstrip("/")
+    base = settings.base_url.lower().strip().rstrip("/")
     
     # URL del Frontend donde el usuario debe ser redirigido tras pagar
     FRONTEND_URL = "https://olimpiadas-programacion.vercel.app"
