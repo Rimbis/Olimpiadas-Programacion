@@ -23,7 +23,6 @@ body {
     background: var(--tinta);
     padding: 18px 24px;
     border-bottom: 4px solid var(--senal);
-
     display: flex;
     flex-wrap: wrap;
     align-items: center;
@@ -37,7 +36,6 @@ body {
     font-size: 1.8rem;
     letter-spacing: 0.12em;
 }
-
 
 .opciones {
     display: flex;
@@ -70,7 +68,6 @@ body {
     text-decoration: none;
     font-size: 0.95rem;
 }
-
 
 .btnLink.destacado {
     background: var(--senal);
@@ -107,7 +104,7 @@ main {
     gap: 32px;
 }
 
-/*  Carrusel de diapositivas */
+/* Carrusel de diapositivas */
 .carrusel {
     position: relative;
     aspect-ratio: 16 / 9;
@@ -147,13 +144,8 @@ main {
     background: rgba(15, 42, 61, 0.9);
 }
 
-.prev {
-    left: 12px;
-}
-
-.next {
-    right: 12px;
-}
+.prev { left: 12px; }
+.next { right: 12px; }
 
 .puntos {
     position: absolute;
@@ -237,21 +229,13 @@ main {
 
 /* Responsive y accesibilidad */
 @media (max-width: 600px) {
-    .encabezado h1 {
-        font-size: 1.4rem;
-    }
-
-    #map {
-        height: 300px;
-    }
+   .encabezado h1 { font-size: 1.4rem; }
+    #map { height: 300px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .cuerpoCarrusel {
-        transition: none;
-    }
+   .cuerpoCarrusel { transition: none; }
 }
-
 
 /* Contenedor principal de dos columnas */
 .contenedor {
@@ -261,29 +245,24 @@ main {
     width: 100%;
 }
 
-/* Forzamos al main dentro del contenedor a ocupar el espacio restante */
 .contenedor main {
     flex: 1;
     min-width: 0;
     max-width: none;
-    /* Anulamos el 900px global para que respete el diseño de dos columnas */
     margin: 0;
     padding: 24px 16px 48px;
     display: grid;
     gap: 32px;
 }
 
-/* Estilos corregidos del aside/lateral para que luzca y no se oculte */
 .lateral {
     flex: 0 0 220px;
     min-width: 220px;
-    /* Evita que el navegador colapse el aside */
     align-self: flex-start;
     position: sticky;
     top: 0;
     padding: 24px 0 24px 16px;
     background-color: var(--papel);
-    /* Hereda el fondo correcto */
     z-index: 10;
 }
 
@@ -299,15 +278,12 @@ main {
     border-radius: 0 6px 6px 0;
     background: transparent;
     color: var(--tinta);
-    /* Texto oscuro visible sobre el fondo */
     font: inherit;
     text-align: left;
     cursor: pointer;
 }
 
-.navBtn:hover {
-    background: var(--cielo);
-}
+.navBtn:hover { background: var(--cielo); }
 
 .navBtn.activo {
     background: var(--cielo);
@@ -326,26 +302,12 @@ main {
     align-content: start;
 }
 
-.panel[hidden] {
-    display: none;
-}
-
-.panel h2 {
-    margin: 0;
-    font-size: 1.3rem;
-}
+.panel[hidden] { display: none; }
+.panel h2 { margin: 0; font-size: 1.3rem; }
 
 .aviso {
     margin: 0;
     color: #5b7686;
-}
-
-.listaProductos {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-    display: grid;
-    gap: 8px;
 }
 
 /* Número del carrito */
@@ -362,33 +324,25 @@ main {
 }
 
 @media (max-width: 800px) {
-    .contenedor {
-        flex-direction: column;
-    }
-
-    .lateral {
+   .contenedor { flex-direction: column; }
+   .lateral {
         position: static;
         flex: none;
         width: 100%;
         padding: 12px 16px 0;
     }
-
-    .lateral nav {
+   .lateral nav {
         display: flex;
         overflow-x: auto;
         gap: 8px;
     }
-
-    .navBtn {
+   .navBtn {
         white-space: nowrap;
         border-left: 0;
         border-bottom: 3px solid transparent;
         border-radius: 6px 6px 0 0;
     }
-
-    .navBtn.activo {
-        border-bottom-color: var(--mar);
-    }
+   .navBtn.activo { border-bottom-color: var(--mar); }
 }
 
 .logo {
@@ -424,5 +378,114 @@ main {
 }
 
 .texto-ayuda.oculto {
-    display: none !important;
+    display: none!important;
+}
+
+/* ====== PAQUETES - VERSIÓN FINAL ARREGLADA (sin imagen repetida) ====== */
+#paquetes {
+  padding: 10px 0 40px;
+}
+
+#paquetes h2 {
+  font-size: 1.8rem;
+  margin-bottom: 8px;
+  color: var(--tinta);
+  font-weight: 800;
+}
+
+#paquetes.aviso {
+  background: #eef6fb;
+  border: 1px dashed var(--mar);
+  color: var(--mar);
+  padding: 14px 18px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  font-weight: 600;
+}
+
+.listaProductos {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 22px;
+  padding: 0;
+  margin: 0;
+}
+
+.listaProductos li {
+  background: #fff;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(15,42,61,0.07);
+  border: 1px solid #e3edf2;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.listaProductos li:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 30px rgba(15,42,61,0.14);
+}
+
+.listaProductos.img-paquete {
+  height: 175px;
+  width: 100%;
+  object-fit: cover;
+  display: block;
+  background: var(--cielo);
+}
+
+.listaProductos li h3 {
+  font-size: 1.15rem;
+  margin: 16px 18px 6px;
+  color: var(--tinta);
+  line-height: 1.3;
+}
+
+.listaProductos li p {
+  margin: 0 18px 10px;
+  font-size: 0.92rem;
+  color: #5a6b75;
+  flex-grow: 1;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: 62px;
+}
+
+.listaProductos li small {
+  margin: 0 18px 14px;
+  background: #f3f8fa;
+  color: var(--mar);
+  padding: 6px 11px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  width: fit-content;
+  border: 1px solid #d8e8ef;
+  text-transform: capitalize;
+}
+
+.listaProductos li button {
+  margin: 0 18px 18px;
+  background: var(--mar);
+  color: white;
+  border: none;
+  padding: 11px 14px;
+  border-radius: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.listaProductos li button:hover {
+  background: var(--tinta);
+}
+
+.listaProductos li button[data-texto="agregado"] {
+  background: #d1e7dd;
+  color: #0f5132;
+  cursor: default;
 }
