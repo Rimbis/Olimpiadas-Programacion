@@ -115,6 +115,10 @@ def iniciar_pago(
         return {"modo": "simulado", "confirmar_en": f"/pagos/{compra_id}/simular"}
 
     base = settings.base_url.rstrip("/")
+    
+    # URL del Frontend donde el usuario debe ser redirigido tras pagar
+    FRONTEND_URL = "https://tu-frontend.onrender.com"
+
     preferencia = {
         "items": [
             {
@@ -126,7 +130,7 @@ def iniciar_pago(
         ],
         "external_reference": str(compra_id),
         "back_urls": {
-            k: f"{base}/?pago={k}&pedido={compra_id}" for k in ("success", "failure", "pending")
+            k: f"{FRONTEND_URL}/?pago={k}&pedido={compra_id}" for k in ("success", "failure", "pending")
         },
     }
     if base.startswith("https://"):  # Mercado Pago exige URL pública para esto
