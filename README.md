@@ -73,16 +73,18 @@ Si querés descargar el proyecto en tu computadora, abrirlo en **Visual Studio C
 Abrí tu terminal y cloná el proyecto ejecutando:
 ```bash
 git clone [https://github.com/Rimbis/Olimpiadas-Programacion.git](https://github.com/Rimbis/Olimpiadas-Programacion.git)
+```
 Luego, abrí Visual Studio Code, ve a File > Open Folder... y seleccioná la carpeta recién descargada Olimpiadas-Programacion.
 ### 2 Hay que abrir y configurar el entorno del Backend en VS Code
    1-Dentro de VS Code, abrí una terminal integrada (Terminal > New Terminal).
    2-Entrá a la carpeta del backend con:
 ```bash
 cd backend
-
+```
    3- Creá un entorno virtual de Python para aislar las dependencias:
 ```bash
 python -m venv venv
+```
 
    4-Activá el entorno virtual:
      ​En Windows (CMD / PowerShell): venv\Scripts\activate
@@ -90,6 +92,7 @@ python -m venv venv
    5- Instalación de dependencias:
 ```bash
 pip install -r requirements.txt
+```
 
 ###3. 3. Configurar las variables de entorno
 ​Dentro de la carpeta backend/, creá un archivo llamado .env.
@@ -104,6 +107,7 @@ pip install -r requirements.txt
 ​Una vez configurado todo, ejecutá el servidor de desarrollo con Uvicorn:
 ```bash
 uvicorn app.main:app --reload --port 8000
+```
 La API quedará corriendo localmente en http://localhost:8000 y podrás acceder a la documentación interactiva en http://localhost:8000/docs.
 
 ###Arquitectura y Flujo de Pagos en Línea (DFD)
