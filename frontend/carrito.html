@@ -4,167 +4,286 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Carrito - AeroPlate</title>
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <title>AeroPlate - Carrito</title>
     <link rel="stylesheet" href="index.css" />
-    <style> /* Para no confundir, esto es especifico de Carrito */
-        main.carro { max-width: 900px; margin: 1rem auto; padding: 0 1rem; }
-        .item { border: 1px solid #2b7a9b; border-radius: 8px; padding: 1rem; margin-bottom: 1rem; }
-        .pasajero { border-top: 1px dashed #aaa; padding: .6rem 0; display: flex; flex-wrap: wrap; gap: .4rem; align-items: center; }
-        .pasajero input, .pasajero select { padding: .3rem; width: 130px; }
-        .pasajero input.corto { width: 70px; }
-        .acciones { display: flex; gap: .5rem; flex-wrap: wrap; margin-top: .6rem; }
-        .error { color: #c0392b; }
-        .ok { color: #2e7d32; }
-    </style>
+    <link rel="stylesheet" href="carrito.css" />
 </head>
 
 <body>
     <header class="encabezado">
         <img src="img/Logo-AeroPlate.jpg" alt="Logo-AeroPlate" class="logo">
         <h1>AeroPlate</h1>
+
         <div class="opciones">
-            <a href="index.html" class="btnLink">Seguir viendo paquetes</a>
+            <a href="index.html" class="btnLink" data-texto="volver">← Volver al inicio</a>
+            <div class="usuario" id="usuario">
+                <a href="login.html" class="btnLink destacado" data-texto="login">Iniciar sesión</a>
+            </div>
         </div>
     </header>
 
-    <main class="carro">
-        <h2>Carrito</h2>
-        <p id="aviso"></p>
-        <div id="items"></div>
+    <main class="contenedor-carrito">
+        <h2 data-texto="tituloCarrito">Tu Carrito de Viajes</h2>
+        <p id="avisoCarrito" class="aviso" role="status"></p>
+        
+        <div id="lista-carrito" class="lista-carrito">
+            <!-- Los paquetes agregados se cargan dinámicamente aquí -->
+        </div>
     </main>
 
     <script src="api.js"></script>
     <script>
-        const cont = document.getElementById("items");
-        const aviso = document.getElementById("aviso");
-        let carrito = getCarrito();
-
-        const pasajeroVacio = () => ({
-            nombre: "", apellido: "", dni: "", tipo_pasajero: "adulto",
-            condiciones_medicas: false, descripcion_medica: "", fila: "", letra: "",
-        });
-
-        function el(tag, props = {}, ...hijos) {
-            const e = Object.assign(document.createElement(tag), props);
-            e.append(...hijos);
-            return e;
-        }
-
-        // Input enlazado a un dato del pasajero: guarda en el navegador al escribir
-        function campo(p, clave, props) {
-            return el("input", {
-                ...props,
-                value: p[clave],
-                oninput: (ev) => { p[clave] = ev.target.value; guardarCarrito(carrito); },
-            });
-        }
-
-        function filaPasajero(it, p, render) {
-            const desc = campo(p, "descripcion_medica", { placeholder: "Describí la condición médica", hidden: !p.condiciones_medicas });
-            const check = el("input", {
-                type: "checkbox", checked: p.condiciones_medicas,
-                onchange: (ev) => { p.condiciones_medicas = ev.target.checked; desc.hidden = !ev.target.checked; guardarCarrito(carrito); },
-            });
-            const tipo = el("select", { onchange: (ev) => { p.tipo_pasajero = ev.target.value; guardarCarrito(carrito); } },
-                el("option", { value: "adulto", textContent: "Adulto" }),
-                el("option", { value: "menor", textContent: "Menor" }));
-            tipo.value = p.tipo_pasajero;
-
-            const fila = el("div", { className: "pasajero" },
-                campo(p, "nombre", { placeholder: "Nombre", maxLength: 100 }),
-                campo(p, "apellido", { placeholder: "Apellido", maxLength: 100 }),
-                campo(p, "dni", { placeholder: "DNI", type: "number", min: 1 }),
-                tipo,
-                campo(p, "fila", { placeholder: "Fila", type: "number", min: 1, className: "corto" }),
-                campo(p, "letra", { placeholder: "Letra", maxLength: 1, className: "corto" }),
-                el("label", {}, check, " Cond. médica"),
-                desc);
-            if (it.pasajeros.length > 1) {
-                fila.append(el("button", {
-                    type: "button", textContent: "Quitar",
-                    onclick: () => { it.pasajeros = it.pasajeros.filter((x) => x !== p); guardarCarrito(carrito); render(); },
-                }));
+        const textos = {
+            es: {
+                volver: "← Volver al inicio",
+                login: "Iniciar sesión",
+                tituloCarrito: "Tu Carrito de Viajes",
+                vacio: "Tu carrito está vacío o necesitás iniciar sesión.",
+                noches: "noches",
+                pasajerosTitulo: "Datos de los pasajeros",
+                pasajeroNum: "Pasajero",
+                nombre: "Nombre",
+                apellido: "Apellido",
+                dni: "DNI",
+                tipoPasajero: "Tipo de pasajero",
+                adulto: "Adulto",
+                menor: "Menor",
+                jubilado: "Jubilado",
+                condicionesMedicas: "¿Tiene condiciones médicas?",
+                descripcionMedica: "Describa la condición médica",
+                fila: "Fila de asiento",
+                letra: "Letra de asiento (Ej: A, B, C...)",
+                confirmar: "Confirmar y Pagar",
+                eliminar: "Eliminar",
+                errorIncompleto: "Completá todos los campos obligatorios de los pasajeros correctamente."
+            },
+            en: {
+                volver: "← Back to home",
+                login: "Log in",
+                tituloCarrito: "Your Travel Cart",
+                vacio: "Your cart is empty or you need to log in.",
+                noches: "nights",
+                pasajerosTitulo: "Passenger Details",
+                pasajeroNum: "Passenger",
+                nombre: "First name",
+                apellido: "Last name",
+                dni: "ID / DNI",
+                tipoPasajero: "Passenger type",
+                adulto: "Adult",
+                menor: "Child",
+                jubilado: "Senior",
+                condicionesMedicas: "Any medical conditions?",
+                descripcionMedica: "Describe medical condition",
+                fila: "Seat Row",
+                letra: "Seat Letter (E.g. A, B, C...)",
+                confirmar: "Confirm and Pay",
+                eliminar: "Remove",
+                errorIncompleto: "Please fill in all required passenger fields correctly."
             }
-            return fila;
+        };
+
+        const config = { idioma: "es", ubicacion: "AR" };
+        try {
+            Object.assign(config, JSON.parse(localStorage.getItem("aeroplate_config")) || {});
+        } catch (e) {}
+
+        const t = (clave) => textos[config.idioma][clave] || clave;
+
+        function aplicarIdioma() {
+            document.documentElement.lang = config.idioma;
+            document.querySelectorAll("[data-texto]").forEach((el) => {
+                if (textos[config.idioma][el.dataset.texto]) {
+                    el.textContent = t(el.dataset.texto);
+                }
+            });
         }
 
-        async function confirmar(it, msg, btn) {
-            msg.textContent = "";
-            const pas = it.pasajeros.map((p) => ({
-                nombre: p.nombre.trim(), apellido: p.apellido.trim(), dni: Number(p.dni),
-                tipo_pasajero: p.tipo_pasajero, condiciones_medicas: p.condiciones_medicas,
-                descripcion_medica: p.condiciones_medicas ? p.descripcion_medica.trim() : null,
-                fila: Number(p.fila), letra: String(p.letra).trim().toUpperCase(),
-            }));
-            const incompleto = pas.some((p) => !p.nombre || !p.apellido || !(p.dni > 0) || !(p.fila > 0)
-                || !/^[A-Z]$/.test(p.letra) || (p.condiciones_medicas && !p.descripcion_medica));
-            if (incompleto) {
-                msg.textContent = "Completá los datos de cada pasajero (DNI, fila, letra y descripción médica si corresponde).";
+        aplicarIdioma();
+
+        const cajaUsuario = document.getElementById("usuario");
+        const botonLoginHtml = cajaUsuario.innerHTML;
+
+        function pintarSesion(usuario) {
+            if (!usuario) {
+                cajaUsuario.innerHTML = botonLoginHtml;
+                aplicarIdioma();
                 return;
             }
-            btn.disabled = true;
-            try {
-                await crearCompra({ id_paquete: it.id, pasajeros: pas });
-                carrito = carrito.filter((x) => x !== it);
-                guardarCarrito(carrito);
-                render();
-                aviso.className = "ok";
-                aviso.textContent = "¡Compra creada! Pendiente: tenés 15 minutos para pagarla.";
-            } catch (e) {
-                msg.textContent = e.message;
-                btn.disabled = false;
-            }
+            cajaUsuario.replaceChildren(document.createTextNode(`Hola, ${usuario.nombre || usuario.email}`));
         }
 
-        function render() {
-            cont.replaceChildren();
-            aviso.className = "";
-            aviso.textContent = "";
+        async function renderCarrito() {
+            const contenedor = document.getElementById("lista-carrito");
+            const aviso = document.getElementById("avisoCarrito");
+            contenedor.innerHTML = "";
 
             if (!getToken()) {
-                aviso.replaceChildren("Iniciá sesión para comprar. ", el("a", { href: "login.html", textContent: "Iniciar sesión" }));
-                return;
-            }
-            if (esAdmin()) { aviso.textContent = "El personal interno no puede realizar compras."; return; }
-            if (!carrito.length) {
-                aviso.textContent = "Tu carrito está vacío. Elegí paquetes en «Paquetes turísticos».";
+                aviso.textContent = t("vacio");
                 return;
             }
 
-            carrito.forEach((it) => {
-                if (!it.pasajeros.length) it.pasajeros.push(pasajeroVacio());
+            const carrito = getCarrito();
+            if (carrito.length === 0) {
+                aviso.textContent = t("vacio");
+                return;
+            }
+            aviso.textContent = "";
 
-                const subtotal = el("strong");
-                const pintarSubtotal = () => {
-                    subtotal.textContent = `Subtotal estimado: $${(Number(it.precio_total) * it.pasajeros.length).toLocaleString("es-AR")}`;
-                };
-                pintarSubtotal();
+            carrito.forEach((item, index) => {
+                const tarjeta = document.createElement("div");
+                tarjeta.className = "tarjeta-item-carrito";
 
-                const msg = el("p", { className: "error" });
-                const btnConfirmar = el("button", { type: "button", className: "boton", textContent: "Confirmar compra" });
-                btnConfirmar.onclick = () => confirmar(it, msg, btnConfirmar);
+                const infoPaquete = document.createElement("div");
+                infoPaquete.className = "info-paquete-carrito";
+                infoPaquete.innerHTML = `
+                    <h3>${item.titulo}</h3>
+                    <p>${item.descripcion || ""}</p>
+                    <p class="precio-detalle">${item.tipo_paquete} · ${item.cantidad_noches} ${t("noches")} · <strong>$${item.precio_total}</strong></p>
+                `;
 
-                const acciones = el("div", { className: "acciones" },
-                    el("button", {
-                        type: "button", textContent: "+ Pasajero",
-                        onclick: () => { if (it.pasajeros.length < 9) { it.pasajeros.push(pasajeroVacio()); guardarCarrito(carrito); render(); } },
-                    }),
-                    el("button", {
-                        type: "button", textContent: "Quitar del carrito",
-                        onclick: () => { carrito = carrito.filter((x) => x !== it); guardarCarrito(carrito); render(); },
-                    }),
-                    btnConfirmar);
+                // Contenedor de formulario de pasajeros (según la cantidad del paquete o por defecto 1)
+                const cantPasajeros = item.cantidad_pasajeros || 1;
+                
+                const seccionPasajeros = document.createElement("div");
+                seccionPasajeros.className = "seccion-pasajeros";
+                seccionPasajeros.innerHTML = `<h4>${t("pasajerosTitulo")}</h4>`;
 
-                cont.append(el("section", { className: "item" },
-                    el("h3", { textContent: it.titulo }),
-                    el("small", { textContent: `${it.cantidad_noches} noches · $${it.precio_total} por pasajero` }),
-                    ...it.pasajeros.map((p) => filaPasajero(it, p, render)),
-                    el("p", {}, subtotal),
-                    msg, acciones));
+                const pasajerosInputs = [];
+                for (let i = 0; i < cantPasajeros; i++) {
+                    const pasajeroDiv = document.createElement("div");
+                    pasajeroDiv.className = "pasajero-form";
+                    pasajeroDiv.innerHTML = `
+                        <h5>${t("pasajeroNum")} ${i + 1}</h5>
+                        <div class="grid-inputs">
+                            <input type="text" placeholder="${t("nombre")}" class="p-nombre" required />
+                            <input type="text" placeholder="${t("apellido")}" class="p-apellido" required />
+                            <input type="number" placeholder="${t("dni")}" class="p-dni" required />
+                            <select class="p-tipo">
+                                <option value="adulto">${t("adulto")}</option>
+                                <option value="menor">${t("menor")}</option>
+                                <option value="jubilado">${t("jubilado")}</option>
+                            </select>
+                            <input type="number" placeholder="${t("fila")}" class="p-fila" min="1" required />
+                            <input type="text" placeholder="${t("letra")}" class="p-letra" maxlength="1" required />
+                        </div>
+                        <label class="check-medico">
+                            <input type="checkbox" class="p-check-medico" /> ${t("condicionesMedicas")}
+                        </label>
+                        <textarea placeholder="${t("descripcionMedica")}" class="p-desc-medica" style="display:none;" rows="2"></textarea>
+                    `;
+
+                    const chk = pasajeroDiv.querySelector(".p-check-medico");
+                    const txtDesc = pasajeroDiv.querySelector(".p-desc-medica");
+                    chk.addEventListener("change", () => {
+                        txtDesc.style.display = chk.checked ? "block" : "none";
+                        if (!chk.checked) txtDesc.value = "";
+                    });
+
+                    seccionPasajeros.appendChild(pasajeroDiv);
+                    pasajerosInputs.push(pasajeroDiv);
+                }
+
+                const accionesDiv = document.createElement("div");
+                accionesDiv.className = "acciones-carrito";
+
+                const msgError = document.createElement("p");
+                msgError.className = "error-msg";
+
+                const btnConfirmar = document.createElement("button");
+                btnConfirmar.className = "btn-confirmar";
+                btnConfirmar.textContent = t("confirmar");
+
+                const btnEliminar = document.createElement("button");
+                btnEliminar.className = "btn-eliminar";
+                btnEliminar.textContent = t("eliminar");
+
+                btnEliminar.addEventListener("click", () => {
+                    let cart = getCarrito();
+                    cart.splice(index, 1);
+                    guardarCarrito(cart);
+                    renderCarrito();
+                });
+
+                btnConfirmar.addEventListener("click", async () => {
+                    msgError.textContent = "";
+                    const pasajerosList = [];
+                    let incompleto = false;
+
+                    pasajerosInputs.forEach(div => {
+                        const nombre = div.querySelector(".p-nombre").value.trim();
+                        const apellido = div.querySelector(".p-apellido").value.trim();
+                        const dni = Number(div.querySelector(".p-dni").value);
+                        const tipo_pasajero = div.querySelector(".p-tipo").value;
+                        const fila = Number(div.querySelector(".p-fila").value);
+                        const letra = div.querySelector(".p-letra").value.trim().toUpperCase();
+                        const condiciones_medicas = div.querySelector(".p-check-medico").checked;
+                        const descripcion_medica = div.querySelector(".p-desc-medica").value.trim();
+
+                        if (!nombre || !apellido || !dni || !fila || !letra || (condiciones_medicas && !descripcion_medica)) {
+                            incompleto = true;
+                        }
+
+                        pasajerosList.push({
+                            nombre, apellido, dni, tipo_pasajero, condiciones_medicas,
+                            descripcion_medica: condiciones_medicas ? descripcion_medica : null,
+                            fila, letra
+                        });
+                    });
+
+                    if (incompleto) {
+                        msgError.textContent = t("errorIncompleto");
+                        return;
+                    }
+
+                    btnConfirmar.disabled = true;
+                    btnConfirmar.textContent = "Procesando...";
+
+                    try {
+                        // 1. Crea la compra en el backend
+                        const compraCreada = await apiFetch("/compras", {
+                            method: "POST",
+                            body: JSON.stringify({
+                                id_paquete: item.id,
+                                pasajeros: pasajerosList
+                            })
+                        });
+
+                        const compraId = compraCreada.id || compraCreada.id_compra;
+
+                        // Remover item del carrito local
+                        let cart = getCarrito();
+                        cart.splice(index, 1);
+                        guardarCarrito(cart);
+
+                        // 2. Iniciar pago con Mercado Pago o simulado
+                        const pagoRes = await apiFetch(`/pagos/${compraId}/iniciar`, {
+                            method: "POST"
+                        });
+
+                        if (pagoRes.modo === "mercadopago" && pagoRes.init_point) {
+                            window.location.href = pagoRes.init_point; // Redirige a MP
+                        } else {
+                            alert("¡Compra creada con éxito! (Pago simulado)");
+                            window.location.href = "index.html";
+                        }
+                    } catch (e) {
+                        msgError.textContent = e.message || "Error al procesar la compra.";
+                        btnConfirmar.disabled = false;
+                        btnConfirmar.textContent = t("confirmar");
+                    }
+                });
+
+                accionesDiv.append(btnConfirmar, btnEliminar);
+                tarjeta.append(infoPaquete, seccionPasajeros, msgError, accionesDiv);
+                contenedor.appendChild(tarjeta);
             });
         }
 
-        render();
+        iniciarSesionGuardada().then((u) => {
+            pintarSesion(u);
+            renderCarrito();
+        });
     </script>
 </body>
 
