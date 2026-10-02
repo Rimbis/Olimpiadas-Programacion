@@ -1,0 +1,151 @@
+.contenedor-carrito {
+    max-width: 800px;
+    margin: 32px auto;
+    padding: 0 16px;
+    display: grid;
+    gap: 24px;
+}
+
+.contenedor-carrito h2 {
+    font-size: 1.8rem;
+    color: var(--tinta);
+    margin-bottom: 0;
+}
+
+.lista-carrito {
+    display: grid;
+    gap: 24px;
+}
+
+.tarjeta-item-carrito {
+    background: #ffffff;
+    border: 1px solid #d0dce3;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 4px 12px rgba(15, 42, 61, 0.05);
+    display: grid;
+    gap: 16px;
+}
+
+.info-paquete-carrito h3 {
+    margin: 0 0 8px 0;
+    color: var(--tinta);
+    font-size: 1.3rem;
+}
+
+.info-paquete-carrito p {
+    margin: 4px 0;
+    color: #4b6b80;
+}
+
+.precio-detalle {
+    font-size: 1.1rem;
+    color: var(--mar) !important;
+    margin-top: 8px !important;
+}
+
+.seccion-pasajeros {
+    border-top: 1px solid #e1ecf2;
+    padding-top: 16px;
+    display: grid;
+    gap: 12px;
+}
+
+.seccion-pasajeros h4 {
+    margin: 0;
+    font-size: 1.1rem;
+    color: var(--tinta);
+}
+
+.pasajero-form {
+    background: var(--papel);
+    border: 1px solid #cbdde6;
+    border-radius: 8px;
+    padding: 16px;
+    display: grid;
+    gap: 12px;
+}
+
+.pasajero-form h5 {
+    margin: 0;
+    color: var(--mar);
+    font-size: 0.95rem;
+}
+
+.grid-inputs {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 10px;
+}
+
+.pasajero-form input,
+.pasajero-form select,
+.pasajero-form textarea {
+    padding: 8px 10px;
+    border: 1px solid #b8c9d4;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    font-family: inherit;
+    background: #fff;
+    color: var(--tinta);
+}
+
+.pasajero-form textarea {
+    resize: vertical;
+}
+
+.check-medico {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    color: var(--tinta);
+    cursor: pointer;
+}
+
+.acciones-carrito {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    align-items: center;
+    margin-top: 8px;
+}
+
+.btn-confirmar {
+    background: var(--senal);
+    color: var(--tinta);
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-confirmar:hover {
+    background: #25d4bc;
+}
+
+.btn-eliminar {
+    background: transparent;
+    color: #d9534f;
+    border: 1px solid #d9534f;
+    padding: 10px 16px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+}
+
+.btn-eliminar:hover {
+    background: #d9534f;
+    color: #fff;
+}
+
+.error-msg {
+    color: #d9534f;
+    margin: 0;
+    font-size: 0.9rem;
+}
