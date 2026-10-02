@@ -9,12 +9,50 @@
         body {
             font-family: Arial, sans-serif;
             margin: 0;
-            padding: 20px;
+            padding: 0;
             background-color: #f4f6f9;
         }
+        /* Estilos de la barra de navegación superior */
+        .navbar {
+            background-color: #2c3e50;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .navbar h2 {
+            margin: 0;
+            font-size: 20px;
+        }
+        .nav-links {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            background-color: #34495e;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+        .nav-links a:hover, .nav-links a.active {
+            background-color: #007bff;
+        }
+        .btn-logout {
+            background-color: #dc3545 !important;
+        }
+        .btn-logout:hover {
+            background-color: #bd2130 !important;
+        }
+
         .container {
             max-width: 1100px;
-            margin: 0 auto;
+            margin: 20px auto;
             background: white;
             padding: 20px;
             border-radius: 8px;
@@ -22,7 +60,8 @@
         }
         h1 {
             color: #333;
-            font-size: 24px;
+            font-size: 22px;
+            margin-top: 0;
         }
         .controls {
             margin: 20px 0;
@@ -30,19 +69,19 @@
             gap: 15px;
             align-items: center;
         }
-        select, button {
+        select, button.btn-accion {
             padding: 8px 12px;
             font-size: 14px;
             border: 1px solid #ccc;
             border-radius: 4px;
         }
-        button {
+        button.btn-accion {
             background-color: #007bff;
             color: white;
             border: none;
             cursor: pointer;
         }
-        button:hover {
+        button.btn-accion:hover {
             background-color: #0056b3;
         }
         table {
@@ -74,8 +113,19 @@
 </head>
 <body>
 
+    <!-- Menú de navegación superior -->
+    <div class="navbar">
+        <h2>Panel de Jefe de Ventas</h2>
+        <div class="nav-links">
+            <a href="alta_productos.html">Alta de productos</a>
+            <a href="ver_productos.html">Ver productos</a>
+            <a href="EstadoDeCuentas.html" class="active">Estado de Cuentas</a>
+            <a href="#" onclick="cerrarSesion()" class="btn-logout">Cerrar sesión</a>
+        </div>
+    </div>
+
     <div class="container">
-        <h1>Estado de Cuenta - Panel de Ventas</h1>
+        <h1>Estado de Cuenta de Clientes y Pedidos</h1>
         <p>Visualice las facturas a cobrar ordenadas por fecha o agrupadas por cliente[span_0](start_span)[span_0](end_span).</p>
 
         <div class="controls">
@@ -84,22 +134,18 @@
                 <option value="fecha">Fecha (Cronológico)</option>
                 <option value="cliente">Cliente (Agrupado)</option>
             </select>
-            <button onclick="cargarEstadoCuenta()">Actualizar</button>
+            <button class="btn-accion" onclick="cargarEstadoCuenta()">Actualizar</button>
         </div>
 
         <div id="errorMensaje" class="error"></div>
 
         <div id="contenedorTabla">
-            <!-- La tabla se renderizará dinámicamente según la opción elegida -->
             <p>Cargando datos...</p>
         </div>
     </div>
 
     <script src="api.js"></script>
     <script>
-        // URL base de tu backend desplegado en Render
-        const API_URL = "https://aeroplate-backend.onrender.com";
-
         async function cargarEstadoCuenta() {
             const orden = document.getElementById("tipoOrden").value;
             const contenedor = document.getElementById("contenedorTabla");
@@ -108,7 +154,8 @@
             errorDiv.textContent = "";
             contenedor.innerHTML = "<p>Cargando estado de cuenta...</p>";
 
-            // Recuperamos el token de autenticación del almacenamiento local (guardado al hacer login)
+            // Validamos que API_URL esté definido globalmente (en api.js) o usamos el fallback
+            const baseURL = typeof API_URL !== 'undefined' ? API_URL : "https://aeroplate-backend.onrender.com";
             const token = localStorage.getItem("token") || sessionStorage.getItem("token");
 
             if (!token) {
@@ -118,7 +165,7 @@
             }
 
             try {
-                const response = await fetch(`${API_URL}/admin/estado-cuenta?orden=${orden}`, {
+                const response = await fetch(`${baseURL}/admin/estado-cuenta?orden=${orden}`, {
                     method: "GET",
                     headers: {
                         "Authorization": `Bearer ${token}`,
@@ -127,8 +174,8 @@
                 });
 
                 if (!response.ok) {
-                    if (response.status === 403) {
-                        throw new Error("Acceso denegado: Se requiere rol de jefe de ventas.");
+                    if (response.status === 401 || response.status === 403) {
+                        throw new Error("Acceso denegado o sesión expirada. Vuelva a iniciar sesión.");
                     }
                     throw new Error("No se pudo obtener el estado de cuenta del servidor.");
                 }
@@ -153,7 +200,6 @@
             let html = "";
 
             if (orden === "fecha") {
-                // Renderizado en formato de lista / facturas ordenadas por fecha
                 html = `
                     <table>
                         <thead>
@@ -186,7 +232,6 @@
                 html += `</tbody></table>`;
 
             } else {
-                // Renderizado agrupado por cliente
                 html = `
                     <table>
                         <thead>
@@ -220,7 +265,12 @@
             contenedor.innerHTML = html;
         }
 
-        // Cargar los datos automáticamente al abrir la página
+        function cerrarSesion() {
+            localStorage.clear();
+            sessionStorage.clear();
+            window.location.href = "login.html"; // Ajustá si tu página de login se llama distinto
+        }
+
         window.onload = () => {
             cargarEstadoCuenta();
         };
