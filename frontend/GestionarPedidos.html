@@ -24,6 +24,17 @@
             margin-top: 20px;
             font-weight: bold;
         }
+        .btn-cancelar {
+            background-color: #d9534f;
+            color: white;
+            border: none;
+            padding: 6px 10px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        .btn-cancelar:hover {
+            background-color: #c9302c;
+        }
     </style>
 </head>
 <body>
@@ -49,6 +60,7 @@
                     <th>Paquete</th>
                     <th>Detalles / Fecha</th>
                     <th>Estado</th>
+                    <th>Acciones</th>
                 </tr>
             </thead>
             <tbody id="cuerpo-tabla-pedidos">
@@ -75,7 +87,6 @@
             const cuerpoTabla = document.getElementById("cuerpo-tabla-pedidos");
 
             try {
-                // Apuntamos correctamente al endpoint de administración en el backend
                 const respuesta = await fetch(`${API_URL}/compras/admin/todas`, {
                     method: "GET",
                     headers: {
@@ -96,13 +107,17 @@
                     cuerpoTabla.innerHTML = "";
 
                     pedidos.forEach(p => {
+                        const compraId = p.id || p.id_compra;
                         const fila = document.createElement("tr");
                         fila.innerHTML = `
-                            <td>${p.id_compra || p.id || '-'}</td>
+                            <td>${compraId || '-'}</td>
                             <td>${p.id_cliente || p.usuario || '-'}</td>
                             <td>${p.id_paquete || '-'}</td>
                             <td>${p.fecha || p.fecha_compra || '-'}</td>
                             <td>${p.estado || 'Registrado'}</td>
+                            <td>
+                                <button class="btn-cancelar" onclick="cancelarPedidoAdmin(${compraId})">Cancelar</button>
+                            </td>
                         `;
                         cuerpoTabla.appendChild(fila);
                     });
@@ -117,6 +132,32 @@
             }
         }
 
+        async function cancelarPedidoAdmin(idCompra) {
+            if (!confirm(`¿Estás seguro de que deseas cancelar la compra #${idCompra}?`)) {
+                return;
+            }
+
+            try {
+                const respuesta = await fetch(`${API_URL}/compras/admin/${idCompra}`, {
+                    method: "DELETE",
+                    headers: {
+                        "Authorization": `Bearer ${token}`
+                    }
+                });
+
+                if (respuesta.ok) {
+                    alert("Pedido cancelado correctamente.");
+                    cargarPedidos(); // Recargar la tabla
+                } else {
+                    const errorData = await respuesta.json();
+                    alert("Error al cancelar: " + (errorData.detail || "No se pudo procesar"));
+                }
+            } catch (error) {
+                console.error("Error de red:", error);
+                alert("Error de conexión al intentar cancelar el pedido.");
+            }
+        }
+
         cargarPedidos();
 
         // Botón para cerrar sesión
@@ -128,5 +169,3 @@
     </script>
 </body>
 </html>
-
-    
