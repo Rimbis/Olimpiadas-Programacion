@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,19 +12,24 @@
             border-collapse: collapse;
             margin-top: 20px;
         }
-        .tabla-productos th, .tabla-productos td {
+
+        .tabla-productos th,
+        .tabla-productos td {
             border: 1px solid #ddd;
             padding: 10px;
             text-align: left;
         }
+
         .tabla-productos th {
             background-color: #f4f4f4;
             color: #333;
         }
+
         .mensaje-info {
             margin-top: 20px;
             font-weight: bold;
         }
+
         .btn-eliminar {
             background-color: #d9534f;
             color: white;
@@ -32,11 +38,13 @@
             cursor: pointer;
             border-radius: 4px;
         }
+
         .btn-eliminar:hover {
             background-color: #c9302c;
         }
     </style>
 </head>
+
 <body>
     <header>
         <img src="img/logo-AeroPlata.jpg" alt="Logo-AeroPlata" class="logo">
@@ -50,9 +58,25 @@
     </header>
 
     <main style="padding: 20px;">
+        <div class="ayuda-container">
+            <button class="ayuda">?</button>
+            <div class="texto-ayuda oculto">
+                Complete código, descripción y precio unitario. Presione "Guardar".
+                El código no puede repetirse.
+            </div>
+        </div>
+        <script>
+            // Seleccionamos el botón y el texto
+            const botonAyuda = document.querySelector('.ayuda');
+            const textoAyuda = document.querySelector('.texto-ayuda');
+
+            botonAyuda.addEventListener('click', () => {
+                textoAyuda.classList.toggle('oculto');
+            });
+        </script>
         <h2>Listado de Paquetes Turísticos Disponibles</h2>
         <p id="mensaje-estado" class="mensaje-info">Cargando productos...</p>
-        
+
         <table class="tabla-productos" id="tabla-paquetes" style="display: none;">
             <thead>
                 <tr>
@@ -99,7 +123,7 @@
 
                 if (respuesta.ok) {
                     const paquetes = await respuesta.json();
-                    
+
                     if (paquetes.length === 0) {
                         mensajeEstado.textContent = "No hay paquetes registrados en el sistema.";
                         tablaPaquetes.style.display = "none";
@@ -175,5 +199,5 @@
         });
     </script>
 </body>
-</html>
 
+</html>

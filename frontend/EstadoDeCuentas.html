@@ -78,6 +78,22 @@
     </header>
 
     <main>
+        <div class="ayuda-container">
+            <button class="ayuda">?</button>
+            <div class="texto-ayuda oculto">
+                
+            </div>
+        </div>
+        <script>
+            // Seleccionamos el botón y el texto
+            const botonAyuda = document.querySelector('.ayuda');
+            const textoAyuda = document.querySelector('.texto-ayuda');
+
+            botonAyuda.addEventListener('click', () => {
+                textoAyuda.classList.toggle('oculto');
+            });
+        </script>
+
         <div class="container">
             <h2>Estado de Cuenta de Clientes y Pedidos</h2>
             <p>Visualice las facturas a cobrar ordenadas por fecha o agrupadas por cliente.</p>

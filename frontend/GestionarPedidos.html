@@ -49,6 +49,22 @@
     </header>
 
     <main style="padding: 20px;">
+
+                <div class="ayuda-container">
+            <button class="ayuda">?</button>
+            <div class="texto-ayuda oculto">
+                
+            </div>
+        </div>
+        <script>
+            // Seleccionamos el botón y el texto
+            const botonAyuda = document.querySelector('.ayuda');
+            const textoAyuda = document.querySelector('.texto-ayuda');
+
+            botonAyuda.addEventListener('click', () => {
+                textoAyuda.classList.toggle('oculto');
+            });
+        </script>
         <h2>Listado de Pedidos y Compras de Clientes</h2>
         <p id="mensaje-estado" class="mensaje-info">Cargando pedidos...</p>
         
