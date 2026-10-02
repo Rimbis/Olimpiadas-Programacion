@@ -76,7 +76,7 @@
 
             try {
                 // Apuntamos al endpoint de compras verificado en el backend
-                const respuesta = await fetch(`${API_URL}/compras`, {
+                const respuesta = await fetch(`${API_URL}/compras/admin/todas`, {
                     method: "GET",
                     headers: {
                         "Authorization": `Bearer ${token}`
