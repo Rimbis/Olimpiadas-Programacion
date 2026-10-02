@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,19 +12,24 @@
             border-collapse: collapse;
             margin-top: 20px;
         }
-        .tabla-pedidos th, .tabla-pedidos td {
+
+        .tabla-pedidos th,
+        .tabla-pedidos td {
             border: 1px solid #ddd;
             padding: 10px;
             text-align: left;
         }
+
         .tabla-pedidos th {
             background-color: #f4f4f4;
             color: #333;
         }
+
         .mensaje-info {
             margin-top: 20px;
             font-weight: bold;
         }
+
         .btn-cancelar {
             background-color: #d9534f;
             color: white;
@@ -32,11 +38,13 @@
             cursor: pointer;
             border-radius: 4px;
         }
+
         .btn-cancelar:hover {
             background-color: #c9302c;
         }
     </style>
 </head>
+
 <body>
     <header>
         <h1>Panel de Jefe de Ventas : Gestionar Pedidos</h1>
@@ -46,14 +54,10 @@
             <a href="EstadoDeCuentas.html"><button>Estado de Cuentas</button></a>
             <button id="btn-logout" style="background-color: #d9534f; color: white;">Cerrar sesión</button>
         </nav>
-    </header>
-
-    <main style="padding: 20px;">
-
-                <div class="ayuda-container">
+        <div class="ayuda-container">
             <button class="ayuda">?</button>
             <div class="texto-ayuda oculto">
-                
+                Muestra los pedidos aun no entregados. Entre a un pedido para entregarlo o anularlo.
             </div>
         </div>
         <script>
@@ -65,9 +69,13 @@
                 textoAyuda.classList.toggle('oculto');
             });
         </script>
+    </header>
+
+    <main style="padding: 20px;">
+
         <h2>Listado de Pedidos y Compras de Clientes</h2>
         <p id="mensaje-estado" class="mensaje-info">Cargando pedidos...</p>
-        
+
         <table class="tabla-pedidos" id="tabla-pedidos" style="display: none;">
             <thead>
                 <tr>
@@ -112,7 +120,7 @@
 
                 if (respuesta.ok) {
                     const pedidos = await respuesta.json();
-                    
+
                     if (pedidos.length === 0) {
                         mensajeEstado.textContent = "No hay pedidos registrados en el sistema.";
                         return;
@@ -184,4 +192,5 @@
         });
     </script>
 </body>
+
 </html>
