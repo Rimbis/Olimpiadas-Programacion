@@ -3,53 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AeroPlate - Estado de Cuenta (Jefe de Ventas)</title>
+    <title>Estado de Cuentas - AeroPlata</title>
     <link rel="stylesheet" href="adm.css">
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f6f9;
-        }
-        /* Estilos de la barra de navegación superior */
-        .navbar {
-            background-color: #2c3e50;
-            color: white;
-            padding: 15px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-        .navbar h2 {
-            margin: 0;
-            font-size: 20px;
-        }
-        .nav-links {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-        .nav-links a {
-            color: white;
-            text-decoration: none;
-            padding: 8px 12px;
-            border-radius: 4px;
-            background-color: #34495e;
-            font-size: 14px;
-            transition: background 0.2s;
-        }
-        .nav-links a:hover, .nav-links a.active {
-            background-color: #007bff;
-        }
-        .btn-logout {
-            background-color: #dc3545 !important;
-        }
-        .btn-logout:hover {
-            background-color: #bd2130 !important;
-        }
-
+        /* Estilos específicos para la tabla de estado de cuentas manteniendo la estética */
         .container {
             max-width: 1100px;
             margin: 20px auto;
@@ -57,11 +14,6 @@
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        h1 {
-            color: #333;
-            font-size: 22px;
-            margin-top: 0;
         }
         .controls {
             margin: 20px 0;
@@ -108,44 +60,58 @@
         .badge-pendiente { background-color: #ffc107; color: #333; }
         .badge-pagada { background-color: #17a2b8; }
         .badge-entregada { background-color: #28a745; }
-        .error { color: #d9534f; margin-top: 10px; }
+        .error { color: #d9534f; margin-top: 10px; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <!-- Menú de navegación superior -->
-    <div class="navbar">
-        <h2>Panel de Jefe de Ventas</h2>
-        <div class="nav-links">
-            <a href="alta_productos.html">Alta de productos</a>
-            <a href="ver_productos.html">Ver productos</a>
-            <a href="EstadoDeCuentas.html" class="active">Estado de Cuentas</a>
-            <a href="#" onclick="cerrarSesion()" class="btn-logout">Cerrar sesión</a>
+    <header>
+        <img src="img/logo-AeroPlata.jpg" alt="Logo-AeroPlata" class="logo">
+        <h1>Panel del Jefe de Ventas / Administrador</h1>
+        <nav>
+            <a href="admin.html"><button>Alta de productos</button></a>
+            <a href="VerProductos.html"><button>Ver productos</button></a>
+            <a href="GestionarPedidos.html"><button>Gestionar Pedidos</button></a>
+            <a href="EstadoDeCuentas.html"><button class="active">Estado de Cuentas</button></a>
+            <button id="btn-logout" style="background-color: #d9534f; color: white;">Cerrar sesión</button>
+        </nav>
+    </header>
+
+    <main>
+        <div class="container">
+            <h2>Estado de Cuenta de Clientes y Pedidos</h2>
+            <p>Visualice las facturas a cobrar ordenadas por fecha o agrupadas por cliente.</p>
+
+            <div class="controls">
+                <label for="tipoOrden">Ordenar por:</label>
+                <select id="tipoOrden" onchange="cargarEstadoCuenta()">
+                    <option value="fecha">Fecha (Cronológico)</option>
+                    <option value="cliente">Cliente (Agrupado)</option>
+                </select>
+                <button class="btn-accion" onclick="cargarEstadoCuenta()">Actualizar</button>
+            </div>
+
+            <div id="errorMensaje" class="error"></div>
+
+            <div id="contenedorTabla">
+                <p>Cargando datos...</p>
+            </div>
         </div>
-    </div>
+    </main>
 
-    <div class="container">
-        <h1>Estado de Cuenta de Clientes y Pedidos</h1>
-        <p>Visualice las facturas a cobrar ordenadas por fecha o agrupadas por cliente[span_0](start_span)[span_0](end_span).</p>
-
-        <div class="controls">
-            <label for="tipoOrden">Ordenar por:</label>
-            <select id="tipoOrden" onchange="cargarEstadoCuenta()">
-                <option value="fecha">Fecha (Cronológico)</option>
-                <option value="cliente">Cliente (Agrupado)</option>
-            </select>
-            <button class="btn-accion" onclick="cargarEstadoCuenta()">Actualizar</button>
-        </div>
-
-        <div id="errorMensaje" class="error"></div>
-
-        <div id="contenedorTabla">
-            <p>Cargando datos...</p>
-        </div>
-    </div>
-
-    <script src="api.js"></script>
     <script>
+        // URL de tu backend desplegado en Render
+        const API_URL = "https://aeroplate-backend.onrender.com"; 
+
+        // Verificar autenticación y roles con la misma lógica de admin.html
+        const token = localStorage.getItem("token");
+        const rol = localStorage.getItem("rol");
+
+        if (!rol || (rol !== "admin" && rol !== "jefe_ventas" && rol !== "ventas")) {
+            alert("Acceso no autorizado. Inicia sesión como administrador.");
+            window.location.href = "login.html";
+        }
+
         async function cargarEstadoCuenta() {
             const orden = document.getElementById("tipoOrden").value;
             const contenedor = document.getElementById("contenedorTabla");
@@ -154,18 +120,14 @@
             errorDiv.textContent = "";
             contenedor.innerHTML = "<p>Cargando estado de cuenta...</p>";
 
-            // Validamos que API_URL esté definido globalmente (en api.js) o usamos el fallback
-            const baseURL = typeof API_URL !== 'undefined' ? API_URL : "https://aeroplate-backend.onrender.com";
-            const token = localStorage.getItem("token") || sessionStorage.getItem("token");
-
             if (!token) {
-                errorDiv.textContent = "Error: No se encontró sesión activa. Inicie sesión como jefe de ventas.";
+                errorDiv.textContent = "Error: No se encontró sesión activa.";
                 contenedor.innerHTML = "";
                 return;
             }
 
             try {
-                const response = await fetch(`${baseURL}/admin/estado-cuenta?orden=${orden}`, {
+                const response = await fetch(`${API_URL}/admin/estado-cuenta?orden=${orden}`, {
                     method: "GET",
                     headers: {
                         "Authorization": `Bearer ${token}`,
@@ -265,12 +227,14 @@
             contenedor.innerHTML = html;
         }
 
-        function cerrarSesion() {
-            localStorage.clear();
-            sessionStorage.clear();
-            window.location.href = "login.html"; // Ajustá si tu página de login se llama distinto
-        }
+        // Botón para cerrar sesión unificado
+        document.getElementById("btn-logout").addEventListener("click", () => {
+            localStorage.removeItem("token");
+            localStorage.removeItem("rol");
+            window.location.href = "login.html";
+        });
 
+        // Cargar datos al iniciar la página
         window.onload = () => {
             cargarEstadoCuenta();
         };
