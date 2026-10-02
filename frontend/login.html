@@ -39,8 +39,8 @@
                 <input type="email" name="correoElectronico" class="entrada" placeholder="email" required>
             </div>
             <div class="campo">
-                <input type="password" name="contra" class="entrada" placeholder="contraseña (mínimo 6)"
-                    minlength="6" maxlength="72" required>
+                <input type="password" name="contra" class="entrada" placeholder="contraseña (mínimo 6)" minlength="6"
+                    maxlength="72" required>
             </div>
             <p class="mensaje" id="errorRegistro" role="alert" style="color:#c0392b;"></p>
             <button type="submit" class="boton">Registrarse</button>
@@ -49,6 +49,23 @@
             </div>
         </form>
     </div>
+
+    <div class="ayuda-container">
+        <button class="ayuda">?</button>
+        <div class="texto-ayuda oculto">
+            Complete sus datos y elija una contraseña de al menos 6 caracteres. 
+            Luego podrá ingresar y comprar.
+        </div>
+    </div>
+    <script>
+        // Seleccionamos el botón y el texto
+        const botonAyuda = document.querySelector('.ayuda');
+        const textoAyuda = document.querySelector('.texto-ayuda');
+
+        botonAyuda.addEventListener('click', () => {
+            textoAyuda.classList.toggle('oculto');
+        });
+    </script>
 
     <script src="api.js"></script>
     <script>

@@ -11,6 +11,8 @@
 </head>
 
 <body>
+
+
     <header class="encabezado">
         <img src="img/Logo-AeroPlate.jpg" alt="Logo-AeroPlate" class="logo">
         <h1>AeroPlate</h1>
@@ -23,10 +25,27 @@
         </div>
     </header>
 
+    <div class="ayuda-container">
+        <button class="ayuda">?</button>
+        <div class="texto-ayuda oculto">
+            Complete sus datos y elija una contraseña de al menos 6 caracteres.
+            Luego podrá ingresar y comprar.
+        </div>
+    </div>
+    <script>
+        // Seleccionamos el botón y el texto
+        const botonAyuda = document.querySelector('.ayuda');
+        const textoAyuda = document.querySelector('.texto-ayuda');
+
+        botonAyuda.addEventListener('click', () => {
+            textoAyuda.classList.toggle('oculto');
+        });
+    </script>
+
     <main class="contenedor-carrito">
         <h2 data-texto="tituloCarrito">Tu Carrito de Viajes</h2>
         <p id="avisoCarrito" class="aviso" role="status"></p>
-        
+
         <div id="lista-carrito" class="lista-carrito">
             <!-- Los paquetes agregados se cargan dinámicamente aquí -->
         </div>
@@ -86,7 +105,7 @@
         const config = { idioma: "es", ubicacion: "AR" };
         try {
             Object.assign(config, JSON.parse(localStorage.getItem("aeroplate_config")) || {});
-        } catch (e) {}
+        } catch (e) { }
 
         const t = (clave) => textos[config.idioma][clave] || clave;
 
@@ -144,7 +163,7 @@
 
                 // Contenedor de formulario de pasajeros (según la cantidad del paquete o por defecto 1)
                 const cantPasajeros = item.cantidad_pasajeros || 1;
-                
+
                 const seccionPasajeros = document.createElement("div");
                 seccionPasajeros.className = "seccion-pasajeros";
                 seccionPasajeros.innerHTML = `<h4>${t("pasajerosTitulo")}</h4>`;

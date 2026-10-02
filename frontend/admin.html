@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel de administración - AeroPlata</title>
     <link rel="stylesheet" href="adm.css">
 </head>
+
 <body>
     <header>
         <img src="img/logo-AeroPlata.jpg" alt="Logo-AeroPlata" class="logo">
@@ -19,6 +21,23 @@
     </header>
 
     <main>
+        <div class="ayuda-container">
+            <button class="ayuda">?</button>
+            <div class="texto-ayuda oculto">
+                Complete sus datos y elija una contraseña de al menos 6 caracteres.
+                Luego podrá ingresar y comprar.
+            </div>
+        </div>
+        <script>
+            // Seleccionamos el botón y el texto
+            const botonAyuda = document.querySelector('.ayuda');
+            const textoAyuda = document.querySelector('.texto-ayuda');
+
+            botonAyuda.addEventListener('click', () => {
+                textoAyuda.classList.toggle('oculto');
+            });
+        </script>
+
         <!-- Sección de cargar productos (Alta de Paquetes) -->
         <section id="seccion-productos" class="panel-seccion">
             <h2>Alta de productos (Paquetes / Servicios)</h2>
@@ -29,14 +48,14 @@
                 <input type="text" id="descripcion" placeholder="Descripción detallada" required>
                 <input type="number" step="0.01" id="precio_total" placeholder="Precio total" required>
                 <input type="number" id="cantidad_noches" placeholder="Cantidad de noches" required>
-                
+
                 <!-- ID de ubicación corregido exactamente como lo pide el backend -->
                 <input type="number" id="id_ubi_destino" placeholder="ID Ubicación Destino" required>
-                
+
                 <input type="number" id="id_hotel" placeholder="ID Hotel" required>
                 <input type="number" id="id_vuelo" placeholder="ID Vuelo" required>
                 <input type="number" id="id_seguro_medico" placeholder="ID Seguro Médico" required>
-                
+
                 <button type="submit">Guardar producto</button>
             </form>
             <p id="mensaje-respuesta" style="margin-top: 10px; font-weight: bold;"></p>
@@ -45,7 +64,7 @@
 
     <script>
         // URL de tu backend desplegado en Render
-        const API_URL = "https://aeroplate-backend.onrender.com"; 
+        const API_URL = "https://aeroplate-backend.onrender.com";
 
         // Verificar si el usuario está logueado leyendo la clave correcta ('token') y aceptando el rol 'ventas'
         const token = localStorage.getItem("token");
@@ -92,8 +111,8 @@
                 } else {
                     const errorData = await respuesta.json();
                     mensajeP.style.color = "red";
-                    const detalleError = Array.isArray(errorData.detail) 
-                        ? errorData.detail.map(err => `${err.loc.join('.')}: ${err.msg}`).join(', ') 
+                    const detalleError = Array.isArray(errorData.detail)
+                        ? errorData.detail.map(err => `${err.loc.join('.')}: ${err.msg}`).join(', ')
                         : (errorData.detail || "No se pudo guardar el paquete");
                     mensajeP.textContent = `Error: ${detalleError}`;
                 }
@@ -112,4 +131,5 @@
         });
     </script>
 </body>
+
 </html>
