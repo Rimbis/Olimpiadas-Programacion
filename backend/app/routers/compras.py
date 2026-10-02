@@ -42,8 +42,6 @@ def crear_compra(
                 "p_pasajeros": [p.model_dump(mode="json") for p in compra.pasajeros],
             },
         ).execute().data
-
-     
     except APIError as e:
         msg = e.message or ""
         if e.code == "23505":
@@ -56,8 +54,6 @@ def crear_compra(
             raise HTTPException(status.HTTP_400_BAD_REQUEST, "El paquete no tiene vuelo asignado")
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "No se pudo crear la compra")
 
-   
-
 
 @router.get("")
 def mis_pedidos(background: BackgroundTasks, usuario: dict = Depends(solo_cliente)) -> list[dict]:
@@ -67,6 +63,19 @@ def mis_pedidos(background: BackgroundTasks, usuario: dict = Depends(solo_client
         sb.table("compras")
         .select(DETALLE)
         .eq("id_cliente", usuario["id"])
+        .order("fecha", desc=True)
+        .execute()
+        .data
+    )
+
+
+@router.get("/admin/todas")
+def admin_ver_todas_las_compras(background: BackgroundTasks, usuario: dict = Depends(solo_admin)) -> list[dict]:
+    """Permite al administrador ver las compras de todos los clientes."""
+    _barrer(background)
+    return (
+        sb.table("compras")
+        .select(DETALLE)
         .order("fecha", desc=True)
         .execute()
         .data
@@ -145,16 +154,3 @@ def cancelar_pedido(
             )
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "No se pudo cancelar el pedido")
     return {"detail": "Pedido cancelado"}
-
-@router.get("/admin/todas")
-def admin_ver_todas_las_compras(background: BackgroundTasks, usuario: dict = Depends(solo_admin)) -> list[dict]:
-    """Permite al administrador ver las compras de todos los clientes."""
-    _barrer(background)
-    return (
-        sb.table("compras")
-        .select(DETALLE)
-        .order("fecha", desc=True)
-        .execute()
-        .data
-    )
-
