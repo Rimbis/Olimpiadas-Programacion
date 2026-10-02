@@ -1,6 +1,7 @@
 // Dirección del backend (uvicorn). Cambiala cuando lo subas a producción.
+// Dirección del backend (uvicorn). Cambiala cuando lo subas a producción.
 const API_URL = (location.hostname === "localhost" || location.hostname === "127.0.0.1")
-   ? "http://localhost:8000" // desarrollo (PC)
+    ? "http://localhost:8000"                  // desarrollo (PC)
     : "https://aeroplate-backend.onrender.com"; // producción (Render)
 
 /* Sesión (token y rol guardados en el navegador) */
@@ -19,15 +20,14 @@ function esAdmin() {
 function logout() {
     localStorage.removeItem("token");
     localStorage.removeItem("rol");
-    localStorage.removeItem("carrito");
 }
 
 /* Pedido genérico a la API */
 async function apiFetch(ruta, opciones = {}) {
-    const headers = { "Content-Type": "application/json",...(opciones.headers || {}) };
+    const headers = { "Content-Type": "application/json", ...(opciones.headers || {}) };
     if (getToken()) headers.Authorization = `Bearer ${getToken()}`;
 
-    const res = await fetch(`${API_URL}${ruta}`, {...opciones, headers });
+    const res = await fetch(`${API_URL}${ruta}`, { ...opciones, headers });
 
     if (res.status === 401) {
         logout(); // La sesión venció o inexistente.
@@ -36,11 +36,9 @@ async function apiFetch(ruta, opciones = {}) {
     if (!res.ok) {
         const err = await res.json().catch(() => ({}));
         // En errores de validación de FastAPI, detail es un array
-        const msg = Array.isArray(err.detail)? err.detail[0].msg : err.detail;
+        const msg = Array.isArray(err.detail) ? err.detail[0].msg : err.detail;
         throw new Error(msg || `Error ${res.status}`);
     }
-    // Si es 204 No Content
-    if (res.status === 204) return null;
     return res.json();
 }
 
@@ -69,10 +67,10 @@ async function registrar({ nombre, apellido, email, password }) {
     });
     if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        const msg = Array.isArray(err.detail)? err.detail[0].msg : err.detail;
+        const msg = Array.isArray(err.detail) ? err.detail[0].msg : err.detail;
         throw new Error(msg || "No se pudo crear la cuenta");
     }
-    return res.json();
+    return res.json(); 
 }
 
 // Devuelve los datos del usuario si el token guardado sigue siendo válido, o un null
@@ -85,7 +83,7 @@ async function iniciarSesionGuardada() {
     }
 }
 
-/* Catálogo y compras */
+/* Catálogo y compras  */
 function crearPaquete(datos) {
     return apiFetch("/paquetes", { method: "POST", body: JSON.stringify(datos) });
 }
@@ -103,3 +101,19 @@ function cancelarPedido(id) {
 }
 
 /* Carrito (se guarda en el navegador hasta confirmar la compra) */
+function getCarrito() {
+    try { return JSON.parse(localStorage.getItem("carrito")) || []; } catch { return []; }
+}
+ 
+function guardarCarrito(carrito) {
+    localStorage.setItem("carrito", JSON.stringify(carrito));
+}
+ 
+// Devuelve false si ya estaba seleccionado.
+function agregarAlCarrito(p) {
+    const carrito = getCarrito();
+    if (carrito.some((x) => x.id === p.id)) return false;
+    carrito.push({ id: p.id, titulo: p.titulo, precio_total: p.precio_total, cantidad_noches: p.cantidad_noches, pasajeros: [] });
+    guardarCarrito(carrito);
+    return true;
+}
