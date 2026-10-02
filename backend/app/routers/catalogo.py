@@ -40,3 +40,18 @@ def crear_paquete(paquete: PaqueteIn, _: dict = Depends(solo_admin)) -> dict:
                 f"Un id de destino, hotel, vuelo o seguro no existe ({e.details})",
             )
         raise HTTPException(status.HTTP_400_BAD_REQUEST, f"No se pudo guardar: {e.message}")
+
+
+@router.delete("/{paquete_id}")
+def eliminar_paquete(paquete_id: int, _: dict = Depends(solo_admin)) -> dict:
+    """Elimina un paquete turístico por su ID (solo administrador)."""
+    try:
+        respuesta = sb.table("paquetes_turisticos").delete().eq("id", paquete_id).execute()
+        if not respuesta.data:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "Paquete no encontrado")
+    except APIError as e:
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST, 
+            "No se pudo eliminar el paquete. Puede estar asociado a compras existentes."
+        )
+    return {"detail": "Paquete eliminado correctamente"}
