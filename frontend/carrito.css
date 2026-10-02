@@ -150,14 +150,15 @@
     font-size: 0.9rem;
 }
 .ayuda-container {
-    position: absolute;
-    top: 1.25rem;
-    right: 1.25rem;
+    position: relative;
+    display: inline-block;
+    float: right; 
+    margin-bottom: 10px;
 }
 
 .texto-ayuda {
     position: absolute;
-    top: 40px;
+    top: 100%;
     right: 0;
     width: 260px;
     background-color: #ffffff;
@@ -165,7 +166,7 @@
     padding: 12px;
     border: 1px solid #e5e7eb;
     border-radius: 0.5rem;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
     font-size: 0.875rem;
     color: #374151;
     z-index: 50;
@@ -173,4 +174,20 @@
 
 .texto-ayuda.oculto {
     display: none !important;
+}
+.ayuda {
+    width: 36px;
+    height: 36px;
+    background-color: #2b7a9b;
+    color: #ffffff;
+    font-size: 1.1rem;
+    font-weight: bold;
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+    transition: all 0.2s ease-in-out;
 }
