@@ -1,27 +1,75 @@
-#  AeroPlate — Backend & Sistema de Pagos
+cat << 'EOF' > README.md
+# ✈️ AeroPlate — Sistema E-Commerce & Pasarela de Pagos
 
-AeroPlate es una plataforma web desarrollada en el marco de proyectos de software y prácticas profesionalizantes, diseñada para ofrecer una experiencia de comercio electrónico funcional e integrada con pasarelas de pago y bases de datos en la nube.
+Plataforma web de comercio electrónico desarrollada en el marco de proyectos tecnológicos y prácticas profesionalizantes, diseñada para ofrecer una experiencia completa de gestión de pedidos, administración de stock y cobros en línea integrados con **Mercado Pago**. La aplicación se encuentra completamente funcional y desplegada en entornos de producción en línea.
 
-##  Tecnologías y Stack Utilizado
-* **Backend:** Python con FastAPI (asíncrono, rápido y con validación automática mediante Pydantic).
-* **Cliente HTTP:** `httpx` para las peticiones a pasarelas externas.
-* **Base de Datos y Autenticación:** Supabase (PostgreSQL + Auth mediante RPCs y triggers).
-* **Pasarela de Pagos:** API de Mercado Pago (Checkout de Preferencias, Webhooks y verificación de pagos).
-* **Despliegue (Deployment):** Render (Entorno cloud con despliegue continuo desde GitHub).
-* **Gestión de Correo:** Brevo (para notificaciones automáticas de compras y vencimientos).
+---
 
-##  Arquitectura y Flujos Principales (DFD)
-El sistema implementa un flujo robusto de lógica de negocios dividido en los siguientes módulos:
+## 🌐 Enlaces de Acceso y Producción
 
-* **Gestión de Clientes y Autenticación:** Endpoints protegidos mediante dependencias (`solo_cliente`) que validan tokens de Supabase.
-* **Ciclo de Vida de Pedidos y Stock:** Validación de carritos, creación de pedidos en estado pendiente, y rutinas de barrido en segundo plano (`BackgroundTasks`) para expirar pedidos vencidos.
-* **Pasarela de Pagos (Mercado Pago):**
-  * **Inicio de Pago (`POST /pagos/{id}/iniciar`):** Genera de forma dinámica la preferencia de pago en Mercado Pago, asociando ítems, `external_reference` (ID del pedido) y URLs de retorno (`back_urls`) hacia el frontend.
-  * **Verificación Manual (`POST /pagos/{id}/verificar`):** Permite consultar de forma segura el estado del pago directamente a la API de Mercado Pago al retornar del checkout, asegurando que nadie pueda falsificar una aprobación.
-  * **Webhooks (`POST /pagos/webhook`):** Recibe notificaciones asíncronas desde los servidores de Mercado Pago, revalidando el token de acceso antes de confirmar definitivamente la transacción en la base de datos mediante procedimientos almacenados (`confirmar_pago`).
-* **Modo Simulado (`POST /pagos/{id}/simular`):** Funcionalidad de respaldo ante la ausencia del token de producción, permitiendo validar flujos completos sin pasarela real.
+* **Repositorio oficial (GitHub):** [Rimbis/Olimpiadas-Programacion](https://github.com/Rimbis/Olimpiadas-Programacion/tree/main)
+* **Sistema Backend en Línea (Render):** [aeroplate-backend.onrender.com](https://aeroplate-backend.onrender.com)
+* **Frontend - Interfaz de Clientes (Vercel):** [olimpiadas-programacion-frontend.vercel.app](https://olimpiadas-programacion-frontend.vercel.app/)
+* **Panel de Administración (Vercel):** [Panel Admin AeroPlate](https://olimpiadas-programacion-frontend.vercel.app/admin.html)
 
-##  Puesta en Marcha (Desarrollo Local)
-1. Clonar el repositorio e instalar las dependencias:
-   ```bash
-   pip install -r requirements.txt
+---
+
+## 🛠️ Tecnologías y Stack Utilizado
+
+* **Backend / API:** Python con **FastAPI** (asíncrono y de alto rendimiento).
+* **Validación de Datos:** **Pydantic**.
+* **Cliente HTTP:** **httpx** para solicitudes asíncronas.
+* **Base de Datos y Autenticación:** **Supabase** (PostgreSQL en la nube, funciones RPC y triggers).
+* **Pasarela de Pagos:** API de **Mercado Pago** (Checkout de preferencias y webhooks).
+* **Despliegue y Cloud (CI/CD):** 
+  - Backend alojado en **Render**.
+  - Frontend y Panel Admin alojados en **Vercel**.
+* **Servicios de Correo:** **Brevo** para notificaciones transaccionales.
+
+---
+
+## 📁 Estructura General del Repositorio
+
+El proyecto se organiza de manera modular para separar la lógica del servidor, la interfaz visual y la documentación técnica:
+
+- **backend/**: Servidor de la API construido en Python con FastAPI.
+  - **app/routers/**: Endpoints y rutas HTTP encargados de gestionar clientes, catálogos y transacciones de pago.
+  - **app/services/**: Módulos de lógica secundaria (envío de correos automáticos mediante Brevo y control de vencimientos).
+  - **app/config.py**: Validador y gestor seguro de variables de entorno mediante Pydantic.
+  - **app/db.py**: Inicializador de la conexión y cliente de Supabase.
+  - **app/auth.py**: Sistema de dependencias de seguridad encargado de validar tokens JWT de usuarios.
+  - **app/main.py**: Archivo principal que inicializa la aplicación FastAPI, middlewares y CORS.
+  - **requirements.txt**: Listado de dependencias de Python necesarias.
+  - **.env.example**: Plantilla de configuración de entorno.
+- **frontend/**: Archivos estáticos y páginas web de la interfaz de usuario y panel de control.
+- **documentos/**: Diagramas formales (DFD, DER) y documentación institucional del proyecto.
+- **imagen-logo/**: Recursos gráficos y logotipos institucionales de la marca.
+- **README.md**: Documentación técnica detallada del proyecto.
+
+---
+
+## 📄 ¿Qué hace cada archivo y componente del Backend?
+
+* **`app/main.py`**: Configura y levanta la API asíncrona, conectando los enrutadores y habilitando el intercambio seguro de recursos (CORS).
+* **`app/config.py`**: Lee de forma estricta las credenciales del entorno mediante Pydantic Settings.
+* **`app/db.py`**: Conecta la aplicación con la base de datos cloud en Supabase.
+* **`app/auth.py`**: Intercepta las peticiones HTTP y filtra el acceso mediante la función `solo_cliente`, garantizando que solo usuarios autorizados operen.
+* **`app/routers/pagos.py`**: Módulo central transaccional. Se encarga de:
+  - Generar las preferencias de pago dinámicas en la API de Mercado Pago.
+  - Configurar las URLs de redireccionamiento al frontend (`back_urls`).
+  - Validar de forma segura los pagos mediante consultas directas a la pasarela (`/verificar`).
+  - Procesar notificaciones asíncronas desatendidas (`/webhook`).
+  - Proveer un sistema de respaldo o modo simulado (`/simular`) para entornos locales o pruebas sin token real.
+* **`app/services/mails.py`**: Automatiza las alertas por correo electrónico ante cambios en los estados de compra utilizando Brevo.
+* **`app/services/vencimientos.py`**: Ejecuta tareas de barrido en segundo plano para expirar pedidos pendientes de pago.
+
+---
+
+## 💻 Guía para Clonar desde GitHub y Usar en VS Code
+
+Si querés descargar el proyecto en tu computadora, abrirlo en **Visual Studio Code** y ponerlo a funcionar localmente, seguí estos pasos detallados:
+
+### 1. Clonar el repositorio desde la terminal o VS Code
+Abrí tu terminal y cloná el proyecto ejecutando:
+```bash
+git clone [https://github.com/Rimbis/Olimpiadas-Programacion.git](https://github.com/Rimbis/Olimpiadas-Programacion.git)
