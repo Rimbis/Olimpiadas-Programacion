@@ -2,7 +2,7 @@
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from postgrest.exceptions import APIError
 
-from app.auth import solo_cliente
+from app.auth import solo_cliente, solo_admin
 from app.db import sb
 from app.schemas import CompraIn, ModificarCompraIn
 from app.services.vencimientos import notificar_vencidas, vencer_compras
@@ -145,3 +145,16 @@ def cancelar_pedido(
             )
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "No se pudo cancelar el pedido")
     return {"detail": "Pedido cancelado"}
+
+@router.get("/admin/todas")
+def admin_ver_todas_las_compras(background: BackgroundTasks, usuario: dict = Depends(solo_admin)) -> list[dict]:
+    """Permite al administrador ver las compras de todos los clientes."""
+    _barrer(background)
+    return (
+        sb.table("compras")
+        .select(DETALLE)
+        .order("fecha", desc=True)
+        .execute()
+        .data
+    )
+
