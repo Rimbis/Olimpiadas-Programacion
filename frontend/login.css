@@ -37,6 +37,22 @@ body {
 .texto-ayuda.oculto {
     display: none !important;
 }
+.ayuda {
+    width: 36px;
+    height: 36px;
+    background-color: #2b7a9b;
+    color: #ffffff;
+    font-size: 1.1rem;
+    font-weight: bold;
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+    transition: all 0.2s ease-in-out;
+}
 
 .contenedor {
     background-color: rgb(122, 199, 243);
