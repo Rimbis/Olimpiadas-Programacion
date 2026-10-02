@@ -4,3 +4,4 @@ supabase
 httpx
 pydantic[email]
 pydantic-settings
+mercadopago
