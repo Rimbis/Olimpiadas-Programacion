@@ -1,11 +1,229 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>AeroPlate - Estado de Cuenta (Jefe de Ventas)</title>
+    <link rel="stylesheet" href="adm.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f6f9;
+        }
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            font-size: 24px;
+        }
+        .controls {
+            margin: 20px 0;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        select, button {
+            padding: 8px 12px;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        th, td {
+            padding: 12px;
+            border: 1px solid #ddd;
+            text-align: left;
+            font-size: 14px;
+        }
+        th {
+            background-color: #f8f9fa;
+            color: #333;
+        }
+        .badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            color: white;
+        }
+        .badge-pendiente { background-color: #ffc107; color: #333; }
+        .badge-pagada { background-color: #17a2b8; }
+        .badge-entregada { background-color: #28a745; }
+        .error { color: #d9534f; margin-top: 10px; }
+    </style>
 </head>
 <body>
-    
+
+    <div class="container">
+        <h1>Estado de Cuenta - Panel de Ventas</h1>
+        <p>Visualice las facturas a cobrar ordenadas por fecha o agrupadas por cliente[span_0](start_span)[span_0](end_span).</p>
+
+        <div class="controls">
+            <label for="tipoOrden">Ordenar por:</label>
+            <select id="tipoOrden" onchange="cargarEstadoCuenta()">
+                <option value="fecha">Fecha (Cronológico)</option>
+                <option value="cliente">Cliente (Agrupado)</option>
+            </select>
+            <button onclick="cargarEstadoCuenta()">Actualizar</button>
+        </div>
+
+        <div id="errorMensaje" class="error"></div>
+
+        <div id="contenedorTabla">
+            <!-- La tabla se renderizará dinámicamente según la opción elegida -->
+            <p>Cargando datos...</p>
+        </div>
+    </div>
+
+    <script src="api.js"></script>
+    <script>
+        // URL base de tu backend desplegado en Render
+        const API_URL = "https://aeroplate-backend.onrender.com";
+
+        async function cargarEstadoCuenta() {
+            const orden = document.getElementById("tipoOrden").value;
+            const contenedor = document.getElementById("contenedorTabla");
+            const errorDiv = document.getElementById("errorMensaje");
+            
+            errorDiv.textContent = "";
+            contenedor.innerHTML = "<p>Cargando estado de cuenta...</p>";
+
+            // Recuperamos el token de autenticación del almacenamiento local (guardado al hacer login)
+            const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+
+            if (!token) {
+                errorDiv.textContent = "Error: No se encontró sesión activa. Inicie sesión como jefe de ventas.";
+                contenedor.innerHTML = "";
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/admin/estado-cuenta?orden=${orden}`, {
+                    method: "GET",
+                    headers: {
+                        "Authorization": `Bearer ${token}`,
+                        "Content-Type": "application/json"
+                    }
+                });
+
+                if (!response.ok) {
+                    if (response.status === 403) {
+                        throw new Error("Acceso denegado: Se requiere rol de jefe de ventas.");
+                    }
+                    throw new Error("No se pudo obtener el estado de cuenta del servidor.");
+                }
+
+                const data = await response.json();
+                renderizarDatos(data, orden);
+
+            } catch (error) {
+                errorDiv.textContent = error.message;
+                contenedor.innerHTML = "";
+            }
+        }
+
+        function renderizarDatos(data, orden) {
+            const contenedor = document.getElementById("contenedorTabla");
+
+            if (!data || data.length === 0) {
+                contenedor.innerHTML = "<p>No hay registros disponibles en el estado de cuenta.</p>";
+                return;
+            }
+
+            let html = "";
+
+            if (orden === "fecha") {
+                // Renderizado en formato de lista / facturas ordenadas por fecha
+                html = `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>N° Pedido</th>
+                                <th>Fecha</th>
+                                <th>Cliente</th>
+                                <th>Total ($)</th>
+                                <th>Estado</th>
+                                <th>Cobrado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+
+                data.forEach(item => {
+                    const clienteNombre = item.cliente ? `${item.cliente.nombre} ${item.cliente.apellido}` : "Desconocido";
+                    html += `
+                        <tr>
+                            <td>#${item.id}</td>
+                            <td>${new Date(item.fecha).toLocaleString()}</td>
+                            <td>${clienteNombre}</td>
+                            <td>$${Number(item.precio_total).toFixed(2)}</td>
+                            <td><span class="badge badge-${item.estado}">${item.estado}</span></td>
+                            <td>${item.cobrado ? "Sí" : "No (Pendiente)"}</td>
+                        </tr>
+                    `;
+                });
+
+                html += `</tbody></table>`;
+
+            } else {
+                // Renderizado agrupado por cliente
+                html = `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Cliente</th>
+                                <th>Pedidos Asociados</th>
+                                <th>Total a Cobrar ($)</th>
+                                <th>Total Cobrado ($)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+
+                data.forEach(grupo => {
+                    const cliente = grupo.cliente || { nombre: "Cliente", apellido: "Desconocido" };
+                    const cantidadPedidos = grupo.pedidos ? grupo.pedidos.length : 0;
+                    
+                    html += `
+                        <tr>
+                            <td><strong>${cliente.apellido}, ${cliente.nombre}</strong><br><small>${cliente.email || ''}</small></td>
+                            <td>${cantidadPedidos} pedido(s)</td>
+                            <td>$${Number(grupo.total_a_cobrar).toFixed(2)}</td>
+                            <td>$${Number(grupo.total_cobrado).toFixed(2)}</td>
+                        </tr>
+                    `;
+                });
+
+                html += `</tbody></table>`;
+            }
+
+            contenedor.innerHTML = html;
+        }
+
+        // Cargar los datos automáticamente al abrir la página
+        window.onload = () => {
+            cargarEstadoCuenta();
+        };
+    </script>
 </body>
 </html>
