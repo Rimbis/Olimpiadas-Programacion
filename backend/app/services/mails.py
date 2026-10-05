@@ -241,13 +241,10 @@ def _textos(evento: str, compra: dict, cliente: dict, paquetes: str) -> tuple[st
     if evento == "pagada":
         detalle_c = _detalle(compra, para_sector=False) or resumen
         detalle_s = _detalle(compra, para_sector=True) or resumen
-        enlace = ""
-        if "localhost" not in settings.base_url:
-            enlace = f"\n\nPodés ver tus pedidos ingresando a {settings.base_url}"
         return (
             f"Aeroplate: pago confirmado (pedido N° {numero})",
             saludo + "Recibimos tu pago. ¡Gracias por tu compra! "
-            "Guardá este mail como comprobante.\n\n" + detalle_c + enlace + firma,
+            "Guardá este mail como comprobante.\n\n" + detalle_c + firma,
             f"Nueva venta pagada: pedido N° {numero}",
             f"Cliente: {nombre} ({cliente['email']})\n\n" + detalle_s
             + "\n\nEstado: pagada, pendiente de entrega.",
