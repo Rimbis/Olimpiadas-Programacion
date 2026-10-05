@@ -1,0 +1,13 @@
+SUPABASE_URL=https://[link].supabase.co
+
+SUPABASE_ANON_KEY=sb_publishable_[key]
+
+SUPABASE_SERVICE_KEY=secret_[key]
+
+BREVO_API_KEY=example_brevo_api_key
+
+MAIL_REMITENTE=quienEnvia@gmail.com
+
+MP_ACCESS_TOKEN=example_mp_access_token
+
+BASE_URL=https://example.com
