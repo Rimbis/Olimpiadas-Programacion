@@ -117,7 +117,7 @@ def iniciar_pago(
     base = settings.base_url.lower().strip().rstrip("/")
     
     # URL del Frontend donde el usuario debe ser redirigido tras pagar
-    FRONTEND_URL = "https://olimpiadas-programacion.vercel.app"
+    FRONTEND_URL = "https://olimpiadas-programacion-frontend.vercel.app/index.html"
 
     preferencia = {
         "items": [
