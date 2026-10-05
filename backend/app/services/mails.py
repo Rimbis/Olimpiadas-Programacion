@@ -11,7 +11,7 @@ Orden de envío:
 Una falla de mail nunca rompe la operación que lo disparó.
 """
 import smtplib
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from email.message import EmailMessage
 
 import httpx
@@ -100,6 +100,135 @@ def _registrar(
         print("ERROR REGISTRO MAIL:", repr(e))
 
 
+AR = timezone(timedelta(hours=-3))  # Argentina no usa horario de verano
+
+# Consulta mínima (siempre funciona) y consulta completa para el mail de pago.
+CONSULTA_BASICA = "*, detalle_compras(paquetes_turisticos(titulo, codigo_paquete))"
+CONSULTA_COMPLETA = (
+    "*, detalle_compras(cantidad_pasajeros, precio_unitario, subtotal, "
+    "paquetes_turisticos(titulo, codigo_paquete, tipo_paquete, cantidad_noches, "
+    "hoteles(nombre_hotel, estrellas), "
+    "ubicacion_destino(ciudad, pais), "
+    "seguro_medico(nombre, empresa), "
+    "vuelos(fecha_ida, fecha_vuelta, clase, cantidad_escalas, "
+    "origen:ubicacion_aeropuerto!id_ubi_aereo_origen(ciudad, codigo_aeropuerto), "
+    "destino:ubicacion_aeropuerto!id_ubi_aereo_destino(ciudad, codigo_aeropuerto)))), "
+    "pasajeros_reserva(nombre, apellido, dni, tipo_pasajero, asiento(fila, letra)), "
+    "pagos(monto, metodo_pago, fecha, estado, id_externo)"
+)
+
+
+def _fecha(valor: str | None) -> str:
+    """Convierte un timestamp ISO a 'dd/mm/aaaa HH:MM' en hora de Argentina."""
+    if not valor:
+        return "-"
+    try:
+        return datetime.fromisoformat(valor).astimezone(AR).strftime("%d/%m/%Y %H:%M")
+    except ValueError:
+        return str(valor)
+
+
+def _pesos(valor) -> str:
+    """Formatea un importe al estilo argentino: $1.250.000 o $1.250.000,50."""
+    try:
+        n = float(valor)
+    except (TypeError, ValueError):
+        return f"${valor}"
+    texto = f"{n:,.0f}" if n == int(n) else f"{n:,.2f}"
+    return "$" + texto.replace(",", "X").replace(".", ",").replace("X", ".")
+
+
+def _lugar(aeropuerto: dict | None) -> str:
+    """'Buenos Aires (EZE)' a partir de un registro de ubicacion_aeropuerto."""
+    if not aeropuerto:
+        return "-"
+    return f"{aeropuerto.get('ciudad', '-')} ({aeropuerto.get('codigo_aeropuerto', '-')})"
+
+
+def _detalle(compra: dict, para_sector: bool) -> str:
+    """Arma el detalle completo de un pedido pagado (paquete, vuelo, pasajeros, pago).
+
+    Devuelve '' si la compra no trae los datos completos; el llamador usa
+    entonces el resumen corto. `para_sector` agrega el DNI de los pasajeros.
+    """
+    items = compra.get("detalle_compras") or []
+    if not items or "pasajeros_reserva" not in compra:
+        return ""
+    item = items[0]
+    paq = item.get("paquetes_turisticos") or {}
+    hotel = paq.get("hoteles") or {}
+    destino = paq.get("ubicacion_destino") or {}
+    seguro = paq.get("seguro_medico") or {}
+    vuelo = paq.get("vuelos") or {}
+
+    lineas = [f"Pedido N° {compra['numero_pedido']}"]
+    lineas.append(
+        f"Paquete: {paq.get('titulo', '-')} "
+        f"(código {paq.get('codigo_paquete', '-')}, {paq.get('tipo_paquete', '-')})"
+    )
+    if destino:
+        lineas.append(
+            f"Destino: {destino.get('ciudad', '-')}, {destino.get('pais', '-')}"
+            f" - {paq.get('cantidad_noches', '-')} noches"
+        )
+    if hotel:
+        lineas.append(f"Hotel: {hotel.get('nombre_hotel', '-')} ({hotel.get('estrellas', '-')} estrellas)")
+    if seguro:
+        lineas.append(f"Seguro médico: {seguro.get('nombre', '-')} ({seguro.get('empresa', '-')})")
+
+    if vuelo:
+        lineas += [
+            "",
+            "VUELO",
+            f"Ida: {_fecha(vuelo.get('fecha_ida'))} - "
+            f"{_lugar(vuelo.get('origen'))} a {_lugar(vuelo.get('destino'))}",
+            f"Vuelta: {_fecha(vuelo.get('fecha_vuelta'))} - "
+            f"{_lugar(vuelo.get('destino'))} a {_lugar(vuelo.get('origen'))}",
+            f"Clase: {vuelo.get('clase', '-')} - Escalas: {vuelo.get('cantidad_escalas', 0)}",
+        ]
+
+    pasajeros = compra.get("pasajeros_reserva") or []
+    if pasajeros:
+        lineas += ["", "PASAJEROS Y ASIENTOS"]
+        for i, p in enumerate(pasajeros, start=1):
+            asiento = p.get("asiento")
+            if isinstance(asiento, list):
+                asiento = asiento[0] if asiento else None
+            sitio = f"{asiento['fila']}{asiento['letra']}" if asiento else "sin asignar"
+            dni = f" - DNI {p['dni']}" if para_sector and p.get("dni") else ""
+            lineas.append(
+                f"{i}. {p['nombre']} {p['apellido']} ({p.get('tipo_pasajero', '-')})"
+                f"{dni} - asiento {sitio}"
+            )
+
+    lineas += ["", "PAGO"]
+    if item.get("cantidad_pasajeros") and item.get("precio_unitario") is not None:
+        lineas.append(
+            f"{item['cantidad_pasajeros']} pasajero(s) x {_pesos(item['precio_unitario'])}"
+            f" = {_pesos(item.get('subtotal'))}"
+        )
+    lineas.append(f"Total: {_pesos(compra['precio_total'])}")
+    pagos = sorted(compra.get("pagos") or [], key=lambda p: p.get("fecha") or "")
+    if pagos:
+        pago = pagos[-1]
+        lineas.append(f"Método de pago: {pago.get('metodo_pago', '-')}")
+        lineas.append(f"Fecha del pago: {_fecha(pago.get('fecha'))}")
+        if pago.get("id_externo"):
+            lineas.append(f"Código de operación: {pago['id_externo']}")
+    return "\n".join(lineas)
+
+
+def _cargar_compra(id_compra: int) -> dict | None:
+    """Trae la compra con todos sus datos; si la consulta completa falla, usa la básica."""
+    for consulta in (CONSULTA_COMPLETA, CONSULTA_BASICA):
+        try:
+            data = sb.table("compras").select(consulta).eq("id", id_compra).execute().data
+            return data[0] if data else None
+        except Exception as e:
+            print("ERROR CONSULTA MAIL (se prueba una más simple):", repr(e))
+    return None
+
+
 def _textos(evento: str, compra: dict, cliente: dict, paquetes: str) -> tuple[str, str, str, str]:
     """Devuelve (asunto_cliente, cuerpo_cliente, asunto_sector, cuerpo_sector)."""
     numero = compra["numero_pedido"]
@@ -110,11 +239,18 @@ def _textos(evento: str, compra: dict, cliente: dict, paquetes: str) -> tuple[st
     resumen = f"Pedido N° {numero}\nPaquete: {paquetes}\nTotal: ${total}"
 
     if evento == "pagada":
+        detalle_c = _detalle(compra, para_sector=False) or resumen
+        detalle_s = _detalle(compra, para_sector=True) or resumen
+        enlace = ""
+        if "localhost" not in settings.base_url:
+            enlace = f"\n\nPodés ver tus pedidos ingresando a {settings.base_url}"
         return (
             f"Aeroplate: pago confirmado (pedido N° {numero})",
-            saludo + "Recibimos tu pago. ¡Gracias por tu compra!\n\n" + resumen + firma,
+            saludo + "Recibimos tu pago. ¡Gracias por tu compra! "
+            "Guardá este mail como comprobante.\n\n" + detalle_c + enlace + firma,
             f"Nueva venta pagada: pedido N° {numero}",
-            f"Cliente: {nombre} ({cliente['email']})\n" + resumen + "\nEstado: pagada, pendiente de entrega.",
+            f"Cliente: {nombre} ({cliente['email']})\n\n" + detalle_s
+            + "\n\nEstado: pagada, pendiente de entrega.",
         )
     if evento == "vencida":
         return (
@@ -136,16 +272,9 @@ def _textos(evento: str, compra: dict, cliente: dict, paquetes: str) -> tuple[st
 
 def _notificar(id_compra: int, evento: str) -> None:
     """Arma y envía los mails de un evento (cliente + sectores activos)."""
-    compra = (
-        sb.table("compras")
-        .select("*, detalle_compras(paquetes_turisticos(titulo, codigo_paquete))")
-        .eq("id", id_compra)
-        .execute()
-        .data
-    )
+    compra = _cargar_compra(id_compra)
     if not compra:
         return
-    compra = compra[0]
     cliente = (
         sb.table("cliente")
         .select("nombre, apellido, email")
