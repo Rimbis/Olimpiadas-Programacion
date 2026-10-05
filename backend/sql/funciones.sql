@@ -36,18 +36,21 @@ alter table pagos add column if not exists id_externo varchar(60);
 create unique index if not exists pagos_externo_estado_uq
     on pagos (id_externo, estado) where id_externo is not null;
 
--- mails.id_contacto era UUID pero contactos_empresa.id es INT: se corrige.
+-- contactos_empresa.id y mails.id_contacto son UUID. id_contacto es opcional
+-- (el mail al cliente no tiene contacto) y archivo_adjunto tambien (aun no se usan).
 do $$
 begin
     if exists (
         select 1 from information_schema.columns
         where table_schema = 'public' and table_name = 'mails'
-          and column_name = 'id_contacto' and data_type = 'uuid'
+          and column_name = 'id_contacto' and data_type <> 'uuid'
     ) then
         alter table mails drop column id_contacto;
-        alter table mails add column id_contacto integer references contactos_empresa (id);
+        alter table mails add column id_contacto uuid references contactos_empresa (id);
     end if;
 end $$;
+alter table mails alter column id_contacto drop not null;
+alter table mails alter column archivo_adjunto drop not null;
 
 -- ---------- 2. Limpiar versiones viejas ----------
 drop function if exists crear_compra(uuid, integer, jsonb);
